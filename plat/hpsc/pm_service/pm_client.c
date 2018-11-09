@@ -176,6 +176,7 @@ static enum pm_node_id irq_node_map[IRQ_MAX + 1] = {
  */
 static enum pm_node_id irq_to_pm_node(unsigned int irq)
 {
+	VERBOSE("%s: irq = %u\n", __func__, irq);
 	assert(irq <= IRQ_MAX);
 	return irq_node_map[irq];
 }
@@ -294,6 +295,7 @@ void pm_client_suspend(const struct pm_proc *proc, unsigned int state)
 	if (state == PM_STATE_SUSPEND_TO_RAM)
 		pm_client_set_wakeup_sources();
 
+	VERBOSE("%s: proc->node_id= %d : mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | 0x%x \n", __func__, proc->node_id, proc->pwrdn_mask);
 	/* Set powerdown request */
 	mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | proc->pwrdn_mask);
 
@@ -314,6 +316,7 @@ void pm_client_abort_suspend(void)
 
 	bakery_lock_get(&pm_client_secure_lock);
 
+	VERBOSE("%s: mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | 0x%x \n", __func__, ~primary_proc->pwrdn_mask);
 	/* Clear powerdown request */
 	mmio_write_32(APU_PWRCTL,
 		 mmio_read_32(APU_PWRCTL) & ~primary_proc->pwrdn_mask);
