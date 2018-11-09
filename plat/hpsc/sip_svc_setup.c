@@ -29,9 +29,9 @@
 #define is_ipi_fid(_fid) (((_fid) & PM_FID_MASK) == IPI_FID_VALUE)
 
 /* SiP Service UUID */
-DEFINE_SVC_UUID(hpsc_sip_uuid,
-		0x2a1d9b5c, 0x8605, 0x4023, 0xa6, 0x1b,
-		0xb9, 0x25, 0x82, 0x2d, 0xe3, 0xa5);
+DEFINE_SVC_UUID2(hpsc_sip_uuid,
+       0x5c9b1b2a, 0x0586, 0x2340, 0xa6, 0x1b,
+       0xb9, 0x25, 0x82, 0x2d, 0xe3, 0xa5);
 
 /**
  * sip_svc_setup() - Setup SiP Service
@@ -52,14 +52,14 @@ static int32_t sip_svc_setup(void)
  * Handler for all SiP SMC calls. Handles standard SIP requests
  * and calls PM SMC handler if the call is for a PM-API function.
  */
-uint64_t sip_svc_smc_handler(uint32_t smc_fid,
-			     uint64_t x1,
-			     uint64_t x2,
-			     uint64_t x3,
-			     uint64_t x4,
+uintptr_t sip_svc_smc_handler(uint32_t smc_fid,
+			     u_register_t x1,
+			     u_register_t x2,
+			     u_register_t x3,
+			     u_register_t x4,
 			     void *cookie,
 			     void *handle,
-			     uint64_t flags)
+			     u_register_t flags)
 {
 	/* Let PM SMC handler deal with PM-related requests */
 	if (is_pm_fid(smc_fid)) {
