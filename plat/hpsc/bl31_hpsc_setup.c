@@ -53,9 +53,12 @@ static inline void bl31_set_default_config(void) {
  * are lost (potentially). This needs to be done before the MMU is initialized
  * so that the memory layout can be used while creating page tables.
  */
-void bl31_early_platform_setup(bl31_params_t *from_bl2,
-			       void *plat_params_from_bl2)
+void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+                                u_register_t arg2, u_register_t arg3)
 {
+	void *from_bl2 = (void *)arg0;
+	void *plat_params_from_bl2 = (void *)arg1;
+
 	/* Initialize the console to provide early debug support */
 	console_init(HPSC_UART_BASE, hpsc_get_uart_clk(),
 		     HPSC_UART_BAUDRATE);
