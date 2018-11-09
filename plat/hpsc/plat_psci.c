@@ -31,6 +31,7 @@ static int hpsc_pwr_domain_on(u_register_t mpidr)
 {
 	unsigned int cpu_id = plat_core_pos_by_mpidr(mpidr);
 	const struct pm_proc *proc;
+	if (cpu_id >= 0x100) cpu_id = cpu_id - 0x100 + 4;
 
 	VERBOSE("%s: mpidr: 0x%lx\n", __func__, mpidr);
 

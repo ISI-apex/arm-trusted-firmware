@@ -57,6 +57,26 @@ static const struct pm_proc pm_procs_all[] = {
 		.pwrdn_mask = APU_3_PWRCTL_CPUPWRDWNREQ_MASK,
 		.ipi = &apu_ipi,
 	},
+	{
+		.node_id = NODE_APU_4,
+		.pwrdn_mask = APU_4_PWRCTL_CPUPWRDWNREQ_MASK,
+		.ipi = &apu_ipi,
+	},
+	{
+		.node_id = NODE_APU_5,
+		.pwrdn_mask = APU_5_PWRCTL_CPUPWRDWNREQ_MASK,
+		.ipi = &apu_ipi,
+	},
+	{
+		.node_id = NODE_APU_6,
+		.pwrdn_mask = APU_6_PWRCTL_CPUPWRDWNREQ_MASK,
+		.ipi = &apu_ipi,
+	},
+	{
+		.node_id = NODE_APU_7,
+		.pwrdn_mask = APU_7_PWRCTL_CPUPWRDWNREQ_MASK,
+		.ipi = &apu_ipi,
+	},
 };
 
 /* Interrupt to PM node ID map */
@@ -316,10 +336,49 @@ void pm_client_wakeup(const struct pm_proc *proc)
 
 	bakery_lock_get(&pm_client_secure_lock);
 
-	/* clear powerdown bit for affected cpu */
-	uint32_t val = mmio_read_32(APU_PWRCTL);
-	val &= ~(proc->pwrdn_mask);
-	mmio_write_32(APU_PWRCTL, val);
+	if (cpuid >= 4) {
+		/* clear powerdown bit for affected cpu */
+		uint32_t val = mmio_read_32(APU1_PWRCTL);
+		val &= ~(proc->pwrdn_mask);
+		mmio_write_32(APU1_PWRCTL, val);
+		VERBOSE("%s: cpuid(%u):  val = 0x%x, proc->pwrdn_mask = 0x%x \n", __func__, cpuid, val, proc->pwrdn_mask);
+		VERBOSE("%s: cpuid(%u):  mmio_write_32(APU1_PWRCTL, 0x%x) \n", __func__, cpuid, val);
+	} else {
+		/* clear powerdown bit for affected cpu */
+		uint32_t val = mmio_read_32(APU_PWRCTL);
+		val &= ~(proc->pwrdn_mask);
+		mmio_write_32(APU_PWRCTL, val);
+		VERBOSE("%s: cpuid(%u):  val = 0x%x, proc->pwrdn_mask = 0x%x \n", __func__, cpuid, val, proc->pwrdn_mask);
+		VERBOSE("%s: cpuid(%u):  mmio_write_32(APU_PWRCTL, 0x%x) \n", __func__, cpuid, val);
+	}
+
+        /* power up island */
+        mmio_write_32(PMU_GLOBAL_REQ_PWRUP_EN, 1 << cpuid);    // DK: looks OK
+        // 0xFFD80118 <- 0x{1, 2, 4, 8, 10, 20, 40, 80}
+        mmio_write_32(PMU_GLOBAL_REQ_PWRUP_TRIG, 1 << cpuid);
+        // 0xFFD80120 <- 0x{1, 2, 4, 8, 10, 20, 40, 80} // DK: looks OK
+        /* FIXME: we should have a way to break out */
+        while (mmio_read_32(PMU_GLOBAL_REQ_PWRUP_STATUS) & (1 << cpuid))
+            ;
+
+        /* release core reset */
+        uint32_t r = mmio_read_32(CRF_APB_RST_FPD_APU);
+
+        unsigned new_r = r | (CRF_APB_RST_FPD_APU_ACPU_RESET << cpuid);
+        if ((r & (CRF_APB_RST_FPD_APU_ACPU_RESET << cpuid)) == 0) {
+            // reset for cpuid is 0. Then reset would not be triggered.
+            // Set the reset for cpuid at 1.
+            mmio_write_32(CRF_APB_RST_FPD_APU, new_r);
+            new_r = mmio_read_32(CRF_APB_RST_FPD_APU);
+            WARN("%s: fix: set it to 1, and then read CRF_APB_RST_FPD_APU(%x)\n", __func__, new_r);
+        }
+
+        r &= ~((CRF_APB_RST_FPD_APU_ACPU_PWRON_RESET |
+                    CRF_APB_RST_FPD_APU_ACPU_RESET) << cpuid);
+        mmio_write_32(CRF_APB_RST_FPD_APU, r);  // DK: looks OK
+        // 0xFD1A0104 <- ~(((1 << 10) | (1 << 0) << cpuid)
+        // 0xFD1A0104 <- ~( 0x400 | (1 << 0) << cpuid)
+
 
 	bakery_lock_release(&pm_client_secure_lock);
 }

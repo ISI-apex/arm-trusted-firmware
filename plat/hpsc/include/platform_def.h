@@ -19,9 +19,14 @@
 /* Size of cacheable stacks */
 #define PLATFORM_STACK_SIZE 0x440
 
-#define PLATFORM_CORE_COUNT		4
-#define PLAT_NUM_POWER_DOMAINS		5
-#define PLAT_MAX_PWR_LVL		1
+#define HPSC_PWR_DOMAINS_AT_MAX_PWR_LVL 1
+#define HPSC_CLUSTER_COUNT 2
+#define HPSC_CLUSTER0_CORE_COUNT 4
+#define HPSC_CLUSTER1_CORE_COUNT 4
+
+#define PLATFORM_CORE_COUNT		(HPSC_CLUSTER0_CORE_COUNT + HPSC_CLUSTER1_CORE_COUNT)
+#define PLAT_NUM_PWR_DOMAINS		(HPSC_PWR_DOMAINS_AT_MAX_PWR_LVL + HPSC_CLUSTER_COUNT + PLATFORM_CORE_COUNT )
+#define PLAT_MAX_PWR_LVL		2
 #define PLAT_MAX_RET_STATE		1
 #define PLAT_MAX_OFF_STATE		2
 
@@ -53,8 +58,8 @@
  * BL32 specific defines.
  ******************************************************************************/
 #ifndef HPSC_BL32_MEM_BASE
-# define BL32_BASE			0x60000000
-# define BL32_LIMIT			0x7fffffff
+# define BL32_BASE			0xe0000000
+# define BL32_LIMIT			0xffffffff
 #else
 # define BL32_BASE			(HPSC_BL32_MEM_BASE)
 # define BL32_LIMIT			(HPSC_BL32_MEM_BASE + HPSC_BL32_MEM_SIZE - 1)
@@ -64,7 +69,7 @@
  * BL33 specific defines.
  ******************************************************************************/
 #ifndef PRELOADED_BL33_BASE
-# define PLAT_ARM_NS_IMAGE_OFFSET	0x8000000
+# define PLAT_ARM_NS_IMAGE_OFFSET	0x88000000
 #else
 # define PLAT_ARM_NS_IMAGE_OFFSET	PRELOADED_BL33_BASE
 #endif
