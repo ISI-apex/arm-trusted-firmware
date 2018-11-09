@@ -149,8 +149,7 @@
 /*******************************************************************************
  * UART related constants
  ******************************************************************************/
-#define HPSC_UART0_BASE		0xFF000000
-#define HPSC_UART1_BASE		0xFF010000
+#define HPSC_UART0_BASE		0xF92C0000
 
 #if HPSC_CONSOLE_IS(cadence) || HPSC_CONSOLE_IS(dcc)
 # define HPSC_UART_BASE	HPSC_UART0_BASE
