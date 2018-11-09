@@ -116,11 +116,13 @@ static void hpsc_pwr_domain_suspend(const psci_power_state_t *target_state)
 	/* Send request to PMU to suspend this core */
 	pm_self_suspend(proc->node_id, MAX_LATENCY, state, hpsc_sec_entry);
 
+#if PLAT_HAS_INTERCONNECT
 	/* APU is to be turned off */
 	if (target_state->pwr_domain_state[1] > PLAT_MAX_RET_STATE) {
 		/* disable coherency */
 		plat_arm_interconnect_exit_coherency();
 	}
+#endif // PLAT_HAS_INTERCONNECT
 }
 
 static void hpsc_pwr_domain_on_finish(const psci_power_state_t *target_state)
@@ -145,8 +147,10 @@ static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_stat
 	/* Clear the APU power control register for this cpu */
 	pm_client_wakeup(proc);
 
+#if PLAT_HAS_INTERCONNECT
 	/* enable coherency */
 	plat_arm_interconnect_enter_coherency();
+#endif // PLAT_HAS_INTERCONNECT
 	/* APU was turned off */
 	if (target_state->pwr_domain_state[1] > PLAT_MAX_RET_STATE) {	/* > 1 */
 		VERBOSE("%s: cpu(%d): plat_arm_gic_init()\n", __func__, cpu_id);
@@ -164,8 +168,10 @@ static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_stat
 
 static void __dead2 hpsc_system_off(void)
 {
+#if PLAT_HAS_INTERCONNECT
 	/* disable coherency */
 	plat_arm_interconnect_exit_coherency();
+#endif // PLAT_HAS_INTERCONNECT
 
 	/* Send the power down request to the PMU */
 	pm_system_shutdown(PMF_SHUTDOWN_TYPE_SHUTDOWN,
@@ -177,8 +183,10 @@ static void __dead2 hpsc_system_off(void)
 
 static void __dead2 hpsc_system_reset(void)
 {
+#if PLAT_HAS_INTERCONNECT
 	/* disable coherency */
 	plat_arm_interconnect_exit_coherency();
+#endif // PLAT_HAS_INTERCONNECT
 
 	/* Send the system reset request to the PMU */
 	pm_system_shutdown(PMF_SHUTDOWN_TYPE_RESET,

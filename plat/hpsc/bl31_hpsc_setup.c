@@ -178,8 +178,10 @@ void bl31_plat_runtime_setup(void)
  */
 void bl31_plat_arch_setup(void)
 {
+#if PLAT_HAS_INTERCONNECT
 	plat_arm_interconnect_init();
 	plat_arm_interconnect_enter_coherency();
+#endif // PLAT_HAS_INTERCONNECT
 
 	arm_setup_page_tables(BL31_BASE,
 			      BL31_END - BL31_BASE,
