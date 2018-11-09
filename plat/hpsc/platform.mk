@@ -54,13 +54,13 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
 				drivers/arm/gic/common/gic_common.c		\
-				drivers/arm/gic/v2/gicv2_main.c			\
-				drivers/arm/gic/v2/gicv2_helpers.c		\
+				drivers/arm/gic/v3/gicv3_main.c			\
+				drivers/arm/gic/v3/gicv3_helpers.c		\
 				drivers/console/aarch64/multi_console.S		\
 				plat/arm/common/arm_cci.c			\
 				plat/arm/common/arm_common.c			\
-				plat/arm/common/arm_gicv2.c			\
-				plat/common/plat_gicv2.c			\
+				plat/arm/common/arm_gicv3.c			\
+				plat/common/plat_gicv3.c			\
 				plat/hpsc/aarch64/hpsc_helpers.S		\
 				plat/hpsc/aarch64/hpsc_common.c
 

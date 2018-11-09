@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <debug.h>
 #include <errno.h>
-#include <gicv2.h>
+#include <gicv3.h>
 #include <mmio.h>
 #include <plat_arm.h>
 #include <platform.h>
@@ -87,7 +87,7 @@ static void hpsc_pwr_domain_off(const psci_power_state_t *target_state)
 			__func__, i, target_state->pwr_domain_state[i]);
 
 	/* Prevent interrupts from spuriously waking up this cpu */
-	gicv2_cpuif_disable();
+	gicv3_cpuif_disable(plat_my_core_pos());
 
 	/*
 	 * Send request to PMU to power down the appropriate APU CPU
@@ -129,8 +129,8 @@ static void hpsc_pwr_domain_on_finish(const psci_power_state_t *target_state)
 		VERBOSE("%s: target_state->pwr_domain_state[%lu]=%x\n",
 			__func__, i, target_state->pwr_domain_state[i]);
 
-	gicv2_cpuif_enable();
-	gicv2_pcpu_distif_init();
+	gicv3_cpuif_enable(plat_my_core_pos());
+	gicv3_rdistif_init(plat_my_core_pos());
 }
 
 static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
@@ -152,9 +152,9 @@ static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_stat
 		VERBOSE("%s: cpu(%d): plat_arm_gic_init()\n", __func__, cpu_id);
 		plat_arm_gic_init();
 	} else {
-		VERBOSE("%s: cpu(%d): gicv2_cpuif_enable()\n", __func__, cpu_id);
-		gicv2_cpuif_enable();
-		gicv2_pcpu_distif_init();
+		VERBOSE("%s: cpu(%d): gicv3_cpuif_enable()\n", __func__, cpu_id);
+		gicv3_cpuif_enable(plat_my_core_pos());
+		gicv3_rdistif_init(plat_my_core_pos());
 	}
 }
 
