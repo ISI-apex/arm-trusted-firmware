@@ -114,13 +114,15 @@
 #define PLAT_ARM_CCI_CLUSTER0_SL_IFACE_IX	3
 #define PLAT_ARM_CCI_CLUSTER1_SL_IFACE_IX	4
 
+
 /*******************************************************************************
  * GIC-400 & interrupt handling related constants
  ******************************************************************************/
-#define BASE_GICD_BASE		0xF9010000
+#define BASE_GICD_BASE		0xF9000000
+#define PLAT_ARM_GICR_BASE 	0xF9100000
+/* DK: Probably for gicv2 backward compatibility */
 #define BASE_GICC_BASE		0xF9020000
-#define BASE_GICH_BASE		0xF9040000
-#define BASE_GICV_BASE		0xF9060000
+#define VE_GICC_BASE		0xF9020000
 
 #if HPSC_WARM_RESTART
 #define IRQ_SEC_IPI_APU				67
