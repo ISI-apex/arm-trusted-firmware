@@ -8,7 +8,7 @@
 
 #include <arm_macros.S>
 #include <cci_macros.S>
-#include "../zynqmp_def.h"
+#include "../hpsc_def.h"
 
 	/* ---------------------------------------------
 	 * The below required platform porting macro

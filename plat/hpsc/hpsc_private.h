@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __ZYNQMP_PRIVATE_H__
-#define __ZYNQMP_PRIVATE_H__
+#ifndef __HPSC_PRIVATE_H__
+#define __HPSC_PRIVATE_H__
 
 #include <interrupt_mgmt.h>
 #include <bl_common.h>
 
-void zynqmp_config_setup(void);
+void hpsc_config_setup(void);
 
 /* ZynqMP specific functions */
-unsigned int zynqmp_get_uart_clk(void);
-unsigned int zynqmp_get_bootmode(void);
+unsigned int hpsc_get_uart_clk(void);
+unsigned int hpsc_get_bootmode(void);
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 /*
  * Register handler to specific GIC entrance
  * for INTR_TYPE_EL3 type of interrupt
@@ -35,4 +35,4 @@ enum fsbl_handoff {
 enum fsbl_handoff fsbl_atf_handover(entry_point_info_t *bl32_image_ep_info,
 		       entry_point_info_t *bl33_image_ep_info);
 
-#endif /* __ZYNQMP_PRIVATE_H__ */
+#endif /* __HPSC_PRIVATE_H__ */

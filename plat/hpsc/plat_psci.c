@@ -15,11 +15,11 @@
 #include <psci.h>
 #include "pm_api_sys.h"
 #include "pm_client.h"
-#include "zynqmp_private.h"
+#include "hpsc_private.h"
 
-uintptr_t zynqmp_sec_entry;
+uintptr_t hpsc_sec_entry;
 
-void zynqmp_cpu_standby(plat_local_state_t cpu_state)
+void hpsc_cpu_standby(plat_local_state_t cpu_state)
 {
 	VERBOSE("%s: cpu_state: 0x%x\n", __func__, cpu_state);
 
@@ -27,7 +27,7 @@ void zynqmp_cpu_standby(plat_local_state_t cpu_state)
 	wfi();
 }
 
-static int zynqmp_pwr_domain_on(u_register_t mpidr)
+static int hpsc_pwr_domain_on(u_register_t mpidr)
 {
 	unsigned int cpu_id = plat_core_pos_by_mpidr(mpidr);
 	const struct pm_proc *proc;
@@ -42,12 +42,12 @@ static int zynqmp_pwr_domain_on(u_register_t mpidr)
 	pm_client_wakeup(proc);
 
 	/* Send request to PMU to wake up selected APU CPU core */
-	pm_req_wakeup(proc->node_id, 1, zynqmp_sec_entry, REQ_ACK_BLOCKING);
+	pm_req_wakeup(proc->node_id, 1, hpsc_sec_entry, REQ_ACK_BLOCKING);
 
 	return PSCI_E_SUCCESS;
 }
 
-static void zynqmp_pwr_domain_off(const psci_power_state_t *target_state)
+static void hpsc_pwr_domain_off(const psci_power_state_t *target_state)
 {
 	unsigned int cpu_id = plat_my_core_pos();
 	const struct pm_proc *proc = pm_get_proc(cpu_id);
@@ -70,7 +70,7 @@ static void zynqmp_pwr_domain_off(const psci_power_state_t *target_state)
 	pm_self_suspend(proc->node_id, MAX_LATENCY, PM_STATE_CPU_IDLE, 0);
 }
 
-static void zynqmp_pwr_domain_suspend(const psci_power_state_t *target_state)
+static void hpsc_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	unsigned int state;
 	unsigned int cpu_id = plat_my_core_pos();
@@ -84,7 +84,7 @@ static void zynqmp_pwr_domain_suspend(const psci_power_state_t *target_state)
 		PM_STATE_SUSPEND_TO_RAM : PM_STATE_CPU_IDLE;
 
 	/* Send request to PMU to suspend this core */
-	pm_self_suspend(proc->node_id, MAX_LATENCY, state, zynqmp_sec_entry);
+	pm_self_suspend(proc->node_id, MAX_LATENCY, state, hpsc_sec_entry);
 
 	/* APU is to be turned off */
 	if (target_state->pwr_domain_state[1] > PLAT_MAX_RET_STATE) {
@@ -93,7 +93,7 @@ static void zynqmp_pwr_domain_suspend(const psci_power_state_t *target_state)
 	}
 }
 
-static void zynqmp_pwr_domain_on_finish(const psci_power_state_t *target_state)
+static void hpsc_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 	for (size_t i = 0; i <= PLAT_MAX_PWR_LVL; i++)
 		VERBOSE("%s: target_state->pwr_domain_state[%lu]=%x\n",
@@ -103,7 +103,7 @@ static void zynqmp_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	gicv2_pcpu_distif_init();
 }
 
-static void zynqmp_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
+static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 {
 	unsigned int cpu_id = plat_my_core_pos();
 	const struct pm_proc *proc = pm_get_proc(cpu_id);
@@ -130,7 +130,7 @@ static void zynqmp_pwr_domain_suspend_finish(const psci_power_state_t *target_st
  * ZynqMP handlers to shutdown/reboot the system
  ******************************************************************************/
 
-static void __dead2 zynqmp_system_off(void)
+static void __dead2 hpsc_system_off(void)
 {
 	/* disable coherency */
 	plat_arm_interconnect_exit_coherency();
@@ -143,7 +143,7 @@ static void __dead2 zynqmp_system_off(void)
 		wfi();
 }
 
-static void __dead2 zynqmp_system_reset(void)
+static void __dead2 hpsc_system_reset(void)
 {
 	/* disable coherency */
 	plat_arm_interconnect_exit_coherency();
@@ -156,7 +156,7 @@ static void __dead2 zynqmp_system_reset(void)
 		wfi();
 }
 
-int zynqmp_validate_power_state(unsigned int power_state,
+int hpsc_validate_power_state(unsigned int power_state,
 				psci_power_state_t *req_state)
 {
 	VERBOSE("%s: power_state: 0x%x\n", __func__, power_state);
@@ -178,7 +178,7 @@ int zynqmp_validate_power_state(unsigned int power_state,
 	return PSCI_E_SUCCESS;
 }
 
-int zynqmp_validate_ns_entrypoint(unsigned long ns_entrypoint)
+int hpsc_validate_ns_entrypoint(unsigned long ns_entrypoint)
 {
 	VERBOSE("%s: ns_entrypoint: 0x%lx\n", __func__, ns_entrypoint);
 
@@ -186,7 +186,7 @@ int zynqmp_validate_ns_entrypoint(unsigned long ns_entrypoint)
 	return PSCI_E_SUCCESS;
 }
 
-void zynqmp_get_sys_suspend_power_state(psci_power_state_t *req_state)
+void hpsc_get_sys_suspend_power_state(psci_power_state_t *req_state)
 {
 	req_state->pwr_domain_state[PSCI_CPU_PWR_LVL] = PLAT_MAX_OFF_STATE;
 	req_state->pwr_domain_state[1] = PLAT_MAX_OFF_STATE;
@@ -195,18 +195,18 @@ void zynqmp_get_sys_suspend_power_state(psci_power_state_t *req_state)
 /*******************************************************************************
  * Export the platform handlers to enable psci to invoke them
  ******************************************************************************/
-static const struct plat_psci_ops zynqmp_psci_ops = {
-	.cpu_standby			= zynqmp_cpu_standby,
-	.pwr_domain_on			= zynqmp_pwr_domain_on,
-	.pwr_domain_off			= zynqmp_pwr_domain_off,
-	.pwr_domain_suspend		= zynqmp_pwr_domain_suspend,
-	.pwr_domain_on_finish		= zynqmp_pwr_domain_on_finish,
-	.pwr_domain_suspend_finish	= zynqmp_pwr_domain_suspend_finish,
-	.system_off			= zynqmp_system_off,
-	.system_reset			= zynqmp_system_reset,
-	.validate_power_state		= zynqmp_validate_power_state,
-	.validate_ns_entrypoint		= zynqmp_validate_ns_entrypoint,
-	.get_sys_suspend_power_state	= zynqmp_get_sys_suspend_power_state,
+static const struct plat_psci_ops hpsc_psci_ops = {
+	.cpu_standby			= hpsc_cpu_standby,
+	.pwr_domain_on			= hpsc_pwr_domain_on,
+	.pwr_domain_off			= hpsc_pwr_domain_off,
+	.pwr_domain_suspend		= hpsc_pwr_domain_suspend,
+	.pwr_domain_on_finish		= hpsc_pwr_domain_on_finish,
+	.pwr_domain_suspend_finish	= hpsc_pwr_domain_suspend_finish,
+	.system_off			= hpsc_system_off,
+	.system_reset			= hpsc_system_reset,
+	.validate_power_state		= hpsc_validate_power_state,
+	.validate_ns_entrypoint		= hpsc_validate_ns_entrypoint,
+	.get_sys_suspend_power_state	= hpsc_get_sys_suspend_power_state,
 };
 
 /*******************************************************************************
@@ -215,9 +215,9 @@ static const struct plat_psci_ops zynqmp_psci_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const struct plat_psci_ops **psci_ops)
 {
-	zynqmp_sec_entry = sec_entrypoint;
+	hpsc_sec_entry = sec_entrypoint;
 
-	*psci_ops = &zynqmp_psci_ops;
+	*psci_ops = &hpsc_psci_ops;
 
 	return 0;
 }

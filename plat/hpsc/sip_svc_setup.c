@@ -10,12 +10,12 @@
 #include <uuid.h>
 #include "ipi_mailbox_svc.h"
 #include "pm_svc_main.h"
-#include "zynqmp_ipi.h"
+#include "hpsc_ipi.h"
 
 /* SMC function IDs for SiP Service queries */
-#define ZYNQMP_SIP_SVC_CALL_COUNT	0x8200ff00
-#define ZYNQMP_SIP_SVC_UID		0x8200ff01
-#define ZYNQMP_SIP_SVC_VERSION		0x8200ff03
+#define HPSC_SIP_SVC_CALL_COUNT	0x8200ff00
+#define HPSC_SIP_SVC_UID		0x8200ff01
+#define HPSC_SIP_SVC_VERSION		0x8200ff03
 
 /* SiP Service Calls version numbers */
 #define SIP_SVC_VERSION_MAJOR	0
@@ -29,7 +29,7 @@
 #define is_ipi_fid(_fid) (((_fid) & PM_FID_MASK) == IPI_FID_VALUE)
 
 /* SiP Service UUID */
-DEFINE_SVC_UUID(zynqmp_sip_uuid,
+DEFINE_SVC_UUID(hpsc_sip_uuid,
 		0x2a1d9b5c, 0x8605, 0x4023, 0xa6, 0x1b,
 		0xb9, 0x25, 0x82, 0x2d, 0xe3, 0xa5);
 
@@ -74,14 +74,14 @@ uint64_t sip_svc_smc_handler(uint32_t smc_fid,
 	}
 
 	switch (smc_fid) {
-	case ZYNQMP_SIP_SVC_CALL_COUNT:
+	case HPSC_SIP_SVC_CALL_COUNT:
 		/* PM functions + default functions */
 		SMC_RET1(handle, PM_API_MAX + 2);
 
-	case ZYNQMP_SIP_SVC_UID:
-		SMC_UUID_RET(handle, zynqmp_sip_uuid);
+	case HPSC_SIP_SVC_UID:
+		SMC_UUID_RET(handle, hpsc_sip_uuid);
 
-	case ZYNQMP_SIP_SVC_VERSION:
+	case HPSC_SIP_SVC_VERSION:
 		SMC_RET2(handle, SIP_SVC_VERSION_MAJOR, SIP_SVC_VERSION_MINOR);
 
 	default:

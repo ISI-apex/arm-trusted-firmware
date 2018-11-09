@@ -10,7 +10,7 @@
 #include <arch.h>
 #include <gic_common.h>
 #include <interrupt_props.h>
-#include "../zynqmp_def.h"
+#include "../hpsc_def.h"
 
 /*******************************************************************************
  * Generic platform constants
@@ -33,7 +33,7 @@
  * present). BL31_BASE is calculated using the current BL31 debug size plus a
  * little space for growth.
  */
-#ifndef ZYNQMP_ATF_MEM_BASE
+#ifndef HPSC_ATF_MEM_BASE
 #if !DEBUG
 # define BL31_BASE			0xfffea000
 # define BL31_LIMIT			0xffffffff
@@ -42,22 +42,22 @@
 # define BL31_LIMIT			0x7ffff
 #endif
 #else
-# define BL31_BASE			(ZYNQMP_ATF_MEM_BASE)
-# define BL31_LIMIT			(ZYNQMP_ATF_MEM_BASE + ZYNQMP_ATF_MEM_SIZE - 1)
-# ifdef ZYNQMP_ATF_MEM_PROGBITS_SIZE
-#  define BL31_PROGBITS_LIMIT		(ZYNQMP_ATF_MEM_BASE + ZYNQMP_ATF_MEM_PROGBITS_SIZE - 1)
+# define BL31_BASE			(HPSC_ATF_MEM_BASE)
+# define BL31_LIMIT			(HPSC_ATF_MEM_BASE + HPSC_ATF_MEM_SIZE - 1)
+# ifdef HPSC_ATF_MEM_PROGBITS_SIZE
+#  define BL31_PROGBITS_LIMIT		(HPSC_ATF_MEM_BASE + HPSC_ATF_MEM_PROGBITS_SIZE - 1)
 # endif
 #endif
 
 /*******************************************************************************
  * BL32 specific defines.
  ******************************************************************************/
-#ifndef ZYNQMP_BL32_MEM_BASE
+#ifndef HPSC_BL32_MEM_BASE
 # define BL32_BASE			0x60000000
 # define BL32_LIMIT			0x7fffffff
 #else
-# define BL32_BASE			(ZYNQMP_BL32_MEM_BASE)
-# define BL32_LIMIT			(ZYNQMP_BL32_MEM_BASE + ZYNQMP_BL32_MEM_SIZE - 1)
+# define BL32_BASE			(HPSC_BL32_MEM_BASE)
+# define BL32_LIMIT			(HPSC_BL32_MEM_BASE + HPSC_BL32_MEM_SIZE - 1)
 #endif
 
 /*******************************************************************************
@@ -92,7 +92,7 @@
 #define PLAT_ARM_GICD_BASE	BASE_GICD_BASE
 #define PLAT_ARM_GICC_BASE	BASE_GICC_BASE
 
-#if !ZYNQMP_WARM_RESTART
+#if !HPSC_WARM_RESTART
 #define PLAT_ARM_G1S_IRQ_PROPS(grp) \
 	INTR_PROP_DESC(ARM_IRQ_SEC_PHY_TIMER, GIC_HIGHEST_SEC_PRIORITY, grp, \
 			GIC_INTR_CFG_LEVEL), \

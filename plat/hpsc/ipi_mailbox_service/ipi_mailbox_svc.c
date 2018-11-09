@@ -15,8 +15,8 @@
 #include <runtime_svc.h>
 #include <string.h>
 #include "ipi_mailbox_svc.h"
-#include "../zynqmp_ipi.h"
-#include "../zynqmp_private.h"
+#include "../hpsc_ipi.h"
+#include "../hpsc_private.h"
 #include "../../../services/spd/trusty/smcall.h"
 
 /*********************************************************************

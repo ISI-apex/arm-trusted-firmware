@@ -59,7 +59,7 @@ struct pinctrl_function {
 /* Max groups for one pin */
 #define MAX_PIN_GROUPS	13
 
-struct zynqmp_pin_group {
+struct hpsc_pin_group {
 	uint16_t (*groups)[];
 };
 
@@ -968,7 +968,7 @@ static struct pinctrl_function pinctrl_functions[MAX_FUNCTION] =  {
 	},
 };
 
-static struct zynqmp_pin_group zynqmp_pin_groups[MAX_PIN] = {
+static struct hpsc_pin_group hpsc_pin_groups[MAX_PIN] = {
 	[PINCTRL_PIN_0] = {
 		.groups = &((uint16_t []) {
 			PINCTRL_GRP_QSPI0_0,
@@ -2693,7 +2693,7 @@ enum pm_ret_status pm_api_pinctrl_get_pin_groups(unsigned int pin,
 
 	memset(groups, END_OF_GROUPS, GROUPS_PAYLOAD_LEN);
 
-	grps = *zynqmp_pin_groups[pin].groups;
+	grps = *hpsc_pin_groups[pin].groups;
 	if (!grps)
 		return PM_RET_SUCCESS;
 
@@ -2741,7 +2741,7 @@ enum pm_ret_status pm_api_pinctrl_get_function(unsigned int pin,
 	if (i == NFUNCS_PER_PIN)
 		return PM_RET_ERROR_NOTSUPPORTED;
 
-	gid = *(*zynqmp_pin_groups[pin].groups + i);
+	gid = *(*hpsc_pin_groups[pin].groups + i);
 
 	for (i = 0; i < MAX_FUNCTION; i++) {
 		grps = *pinctrl_functions[i].groups;
@@ -2789,7 +2789,7 @@ enum pm_ret_status pm_api_pinctrl_set_function(unsigned int pin,
 	if (i == NFUNCS_PER_PIN)
 		return PM_RET_ERROR_NOTSUPPORTED;
 
-	pgrps = *zynqmp_pin_groups[pin].groups;
+	pgrps = *hpsc_pin_groups[pin].groups;
 	if (!pgrps)
 		return PM_RET_ERROR_NOTSUPPORTED;
 
