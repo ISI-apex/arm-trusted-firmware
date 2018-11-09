@@ -108,4 +108,6 @@
 #define PLAT_ARM_G0_IRQ_PROPS(grp)	{ARM_IRQ_SEC_SGI_0, 0x0, grp, 0x0}, \
 					{ARM_IRQ_SEC_SGI_0, 0x0, grp, 0x0}
 
+#define PLAT_HAS_INTERCONNECT 0 /* TODO: model CCN in Qemu */
+
 #endif /* __PLATFORM_DEF_H__ */

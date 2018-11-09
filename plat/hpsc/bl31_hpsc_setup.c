@@ -183,8 +183,10 @@ void bl31_plat_runtime_setup(void)
  */
 void bl31_plat_arch_setup(void)
 {
+#if PLAT_HAS_INTERCONNECT
 	plat_arm_interconnect_init();
 	plat_arm_interconnect_enter_coherency();
+#endif // PLAT_HAS_INTERCONNECT
 
 	const mmap_region_t bl_regions[] = {
 	    MAP_REGION_FLAT(BL31_BASE, BL31_END - BL31_BASE,

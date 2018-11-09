@@ -57,7 +57,6 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				drivers/arm/gic/v3/gicv3_main.c			\
 				drivers/arm/gic/v3/gicv3_helpers.c		\
 				drivers/console/aarch64/multi_console.S		\
-				plat/arm/common/arm_cci.c			\
 				plat/arm/common/arm_common.c			\
 				plat/arm/common/arm_gicv3.c			\
 				plat/common/plat_gicv3.c			\
@@ -75,8 +74,7 @@ else
 endif
 $(eval $(call add_define_val,HPSC_CONSOLE,HPSC_CONSOLE_ID_${HPSC_CONSOLE}))
 
-BL31_SOURCES		+=	drivers/arm/cci/cci.c			\
-				lib/cpus/aarch64/aem_generic.S		\
+BL31_SOURCES		+=	lib/cpus/aarch64/aem_generic.S		\
 				lib/cpus/aarch64/cortex_a53.S		\
 				plat/common/plat_psci_common.c		\
 				plat/hpsc/bl31_hpsc_setup.c		\
