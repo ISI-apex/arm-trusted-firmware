@@ -256,6 +256,9 @@ uint64_t pm_smc_handler(uint32_t smc_fid, uint64_t x1, uint64_t x2, uint64_t x3,
 	pm_arg[2] = (uint32_t)x2;
 	pm_arg[3] = (uint32_t)(x2 >> 32);
 
+	INFO("ATF %s: smc_fid(0x%x), pm_arg[0](0x%x), pm_arg[1](0x%x), pm_arg[2](0x%x), pm_arg[3](0x%x)\n",
+		__func__, smc_fid, pm_arg[0], pm_arg[1], pm_arg[2], pm_arg[3]);
+
 	switch (smc_fid & FUNCID_NUM_MASK) {
 	/* PM API Functions */
 	case PM_SELF_SUSPEND:

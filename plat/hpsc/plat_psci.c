@@ -31,19 +31,48 @@ static int hpsc_pwr_domain_on(u_register_t mpidr)
 {
 	unsigned int cpu_id = plat_core_pos_by_mpidr(mpidr);
 	const struct pm_proc *proc;
+	VERBOSE("%s: cpu_id(0x%x):  mpidr: 0x%lx\n", __func__, cpu_id, mpidr);
 	if (cpu_id >= 0x100) cpu_id = cpu_id - 0x100 + 4;
-
-	VERBOSE("%s: mpidr: 0x%lx\n", __func__, mpidr);
 
 	if (cpu_id == -1)
 		return PSCI_E_INTERN_FAIL;
 
+#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
+	int kk;
+	aff_info_state_t kk2[8];
+	for (kk = 0; kk < 8; kk++) {
+		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
+	}
+	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
+		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
+#endif
 	proc = pm_get_proc(cpu_id);
 	/* Clear power down request */
+#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
+	for (kk = 0; kk < 8; kk++) {
+		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
+	}
+	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
+		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
+#endif
 	pm_client_wakeup(proc);
+#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
+	for (kk = 0; kk < 8; kk++) {
+		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
+	}
+	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
+		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
+#endif
 
 	/* Send request to PMU to wake up selected APU CPU core */
 	pm_req_wakeup(proc->node_id, 1, hpsc_sec_entry, REQ_ACK_BLOCKING);
+#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
+	for (kk = 0; kk < 8; kk++) {
+		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
+	}
+	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
+		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
+#endif
 
 	return PSCI_E_SUCCESS;
 }
@@ -78,8 +107,8 @@ static void hpsc_pwr_domain_suspend(const psci_power_state_t *target_state)
 	const struct pm_proc *proc = pm_get_proc(cpu_id);
 
 	for (size_t i = 0; i <= PLAT_MAX_PWR_LVL; i++)
-		VERBOSE("%s: target_state->pwr_domain_state[%lu]=%x\n",
-			__func__, i, target_state->pwr_domain_state[i]);
+		VERBOSE("%s: cpu_id(0x%x): target_state->pwr_domain_state[%lu]=%x\n",
+			__func__, cpu_id, i, target_state->pwr_domain_state[i]);
 
 	state = target_state->pwr_domain_state[1] > PLAT_MAX_RET_STATE ?
 		PM_STATE_SUSPEND_TO_RAM : PM_STATE_CPU_IDLE;
@@ -110,8 +139,8 @@ static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_stat
 	const struct pm_proc *proc = pm_get_proc(cpu_id);
 
 	for (size_t i = 0; i <= PLAT_MAX_PWR_LVL; i++)
-		VERBOSE("%s: target_state->pwr_domain_state[%lu]=%x\n",
-			__func__, i, target_state->pwr_domain_state[i]);
+		VERBOSE("%s: cpu(%d): target_state->pwr_domain_state[%lu]=%x\n",
+			__func__, cpu_id, i, target_state->pwr_domain_state[i]);
 
 	/* Clear the APU power control register for this cpu */
 	pm_client_wakeup(proc);
@@ -119,9 +148,11 @@ static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_stat
 	/* enable coherency */
 	plat_arm_interconnect_enter_coherency();
 	/* APU was turned off */
-	if (target_state->pwr_domain_state[1] > PLAT_MAX_RET_STATE) {
+	if (target_state->pwr_domain_state[1] > PLAT_MAX_RET_STATE) {	/* > 1 */
+		VERBOSE("%s: cpu(%d): plat_arm_gic_init()\n", __func__, cpu_id);
 		plat_arm_gic_init();
 	} else {
+		VERBOSE("%s: cpu(%d): gicv2_cpuif_enable()\n", __func__, cpu_id);
 		gicv2_cpuif_enable();
 		gicv2_pcpu_distif_init();
 	}

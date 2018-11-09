@@ -74,13 +74,13 @@ static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
 	uintptr_t buffer_base = proc->ipi->buffer_base +
 					IPI_BUFFER_TARGET_PMU_OFFSET +
 					IPI_BUFFER_REQ_OFFSET;
-
 	/* Write payload into IPI buffer */
 	for (size_t i = 0; i < PAYLOAD_ARG_CNT; i++) {
 		mmio_write_32(buffer_base + offset, payload[i]);
 		offset += PAYLOAD_ARG_SIZE;
 	}
-
+	VERBOSE("pm_ipi_send_common: mmio_write_32, buffer_base(%lx): %x %x %x %x %x %x\n", 
+		buffer_base, payload[0], payload[1], payload[2], payload[3], payload[4], payload[5]);
 	/* Generate IPI to PMU */
 	ipi_mb_notify(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id,
 		      is_blocking);
@@ -126,6 +126,7 @@ enum pm_ret_status pm_ipi_send(const struct pm_proc *proc,
 {
 	enum pm_ret_status ret;
 
+	VERBOSE("pm_ipi_send : start \n");
 	bakery_lock_get(&pm_secure_lock);
 
 	ret = pm_ipi_send_common(proc, payload, IPI_BLOCKING);
@@ -151,6 +152,7 @@ static enum pm_ret_status pm_ipi_buff_read(const struct pm_proc *proc,
 	uintptr_t buffer_base = proc->ipi->buffer_base +
 				IPI_BUFFER_TARGET_PMU_OFFSET +
 				IPI_BUFFER_RESP_OFFSET;
+	VERBOSE("%s: start \n", __func__);
 
 	/*
 	 * Read response from IPI buffer
@@ -161,8 +163,10 @@ static enum pm_ret_status pm_ipi_buff_read(const struct pm_proc *proc,
 	 */
 	for (i = 1; i <= count; i++) {
 		*value = mmio_read_32(buffer_base + (i * PAYLOAD_ARG_SIZE));
+	VERBOSE("%s: value[%ld] = 0x%x\n", __func__, i, *value);
 		value++;
 	}
+	VERBOSE("%s: count = %ld, read %lx \n", __func__, count, buffer_base);
 
 	return mmio_read_32(buffer_base);
 }
@@ -207,14 +211,18 @@ enum pm_ret_status pm_ipi_send_sync(const struct pm_proc *proc,
 				    unsigned int *value, size_t count)
 {
 	enum pm_ret_status ret;
+	VERBOSE("pm_ipi_send_sync: start \n");
 
 	bakery_lock_get(&pm_secure_lock);
 
 	ret = pm_ipi_send_common(proc, payload, IPI_BLOCKING);
+	VERBOSE("pm_ipi_send_sync: after pm_ipi_send_common: return(%d)\n", ret);
 	if (ret != PM_RET_SUCCESS)
 		goto unlock;
 
 	ret = pm_ipi_buff_read(proc, value, count);
+
+	VERBOSE("pm_ipi_send_sync: after pm_ipi_buff_read: return(%d)\n", ret);
 
 unlock:
 	bakery_lock_release(&pm_secure_lock);
