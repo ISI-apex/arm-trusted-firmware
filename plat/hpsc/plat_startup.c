@@ -8,8 +8,8 @@
 #include <assert.h>
 #include <debug.h>
 #include <mmio.h>
-#include "zynqmp_def.h"
-#include "zynqmp_private.h"
+#include "hpsc_def.h"
+#include "hpsc_private.h"
 
 /*
  * ATFHandoffParams

@@ -18,7 +18,7 @@
 #include "pm_client.h"
 #include "pm_common.h"
 #include "pm_ipi.h"
-#include "../zynqmp_def.h"
+#include "../hpsc_def.h"
 
 /**
  * pm_ioctl_get_rpu_oper_mode () - Get current RPU operation mode
@@ -32,8 +32,8 @@ static enum pm_ret_status pm_ioctl_get_rpu_oper_mode(unsigned int *mode)
 {
 	unsigned int val;
 
-	val = mmio_read_32(ZYNQMP_RPU_GLBL_CNTL);
-	val &= ZYNQMP_SLSPLIT_MASK;
+	val = mmio_read_32(HPSC_RPU_GLBL_CNTL);
+	val &= HPSC_SLSPLIT_MASK;
 	if (val)
 		*mode = PM_RPU_MODE_SPLIT;
 	else
@@ -60,21 +60,21 @@ static enum pm_ret_status pm_ioctl_set_rpu_oper_mode(unsigned int mode)
 	if (mmio_read_32(CRL_APB_RST_LPD_TOP) && CRL_APB_RPU_AMBA_RESET)
 		return PM_RET_ERROR_ACCESS;
 
-	val = mmio_read_32(ZYNQMP_RPU_GLBL_CNTL);
+	val = mmio_read_32(HPSC_RPU_GLBL_CNTL);
 
 	if (mode == PM_RPU_MODE_SPLIT) {
-		val |= ZYNQMP_SLSPLIT_MASK;
-		val &= ~ZYNQMP_TCM_COMB_MASK;
-		val &= ~ZYNQMP_SLCLAMP_MASK;
+		val |= HPSC_SLSPLIT_MASK;
+		val &= ~HPSC_TCM_COMB_MASK;
+		val &= ~HPSC_SLCLAMP_MASK;
 	} else if (mode == PM_RPU_MODE_LOCKSTEP) {
-		val &= ~ZYNQMP_SLSPLIT_MASK;
-		val |= ZYNQMP_TCM_COMB_MASK;
-		val |= ZYNQMP_SLCLAMP_MASK;
+		val &= ~HPSC_SLSPLIT_MASK;
+		val |= HPSC_TCM_COMB_MASK;
+		val |= HPSC_SLCLAMP_MASK;
 	} else {
 		return PM_RET_ERROR_ARGS;
 	}
 
-	mmio_write_32(ZYNQMP_RPU_GLBL_CNTL, val);
+	mmio_write_32(HPSC_RPU_GLBL_CNTL, val);
 
 	return PM_RET_SUCCESS;
 }
@@ -94,18 +94,18 @@ static enum pm_ret_status pm_ioctl_config_boot_addr(enum pm_node_id nid,
 	unsigned int rpu_cfg_addr, val;
 
 	if (nid == NODE_RPU_0)
-		rpu_cfg_addr = ZYNQMP_RPU0_CFG;
+		rpu_cfg_addr = HPSC_RPU0_CFG;
 	else if (nid == NODE_RPU_1)
-		rpu_cfg_addr = ZYNQMP_RPU1_CFG;
+		rpu_cfg_addr = HPSC_RPU1_CFG;
 	else
 		return PM_RET_ERROR_ARGS;
 
 	val = mmio_read_32(rpu_cfg_addr);
 
 	if (value == PM_RPU_BOOTMEM_LOVEC)
-		val &= ~ZYNQMP_VINITHI_MASK;
+		val &= ~HPSC_VINITHI_MASK;
 	else if (value == PM_RPU_BOOTMEM_HIVEC)
-		val |= ZYNQMP_VINITHI_MASK;
+		val |= HPSC_VINITHI_MASK;
 	else
 		return PM_RET_ERROR_ARGS;
 
@@ -127,16 +127,16 @@ static enum pm_ret_status pm_ioctl_config_tcm_comb(unsigned int value)
 {
 	unsigned int val;
 
-	val = mmio_read_32(ZYNQMP_RPU_GLBL_CNTL);
+	val = mmio_read_32(HPSC_RPU_GLBL_CNTL);
 
 	if (value == PM_RPU_TCM_SPLIT)
-		val &= ~ZYNQMP_TCM_COMB_MASK;
+		val &= ~HPSC_TCM_COMB_MASK;
 	else if (value == PM_RPU_TCM_COMB)
-		val |= ZYNQMP_TCM_COMB_MASK;
+		val |= HPSC_TCM_COMB_MASK;
 	else
 		return PM_RET_ERROR_ARGS;
 
-	mmio_write_32(ZYNQMP_RPU_GLBL_CNTL, val);
+	mmio_write_32(HPSC_RPU_GLBL_CNTL, val);
 
 	return PM_RET_SUCCESS;
 }
@@ -234,11 +234,11 @@ static enum pm_ret_status pm_ioctl_sd_dll_reset(enum pm_node_id nid,
 	int ret;
 
 	if (nid == NODE_SD_0) {
-		mask = ZYNQMP_SD0_DLL_RST_MASK;
-		val = ZYNQMP_SD0_DLL_RST;
+		mask = HPSC_SD0_DLL_RST_MASK;
+		val = HPSC_SD0_DLL_RST;
 	} else if (nid == NODE_SD_1) {
-		mask = ZYNQMP_SD1_DLL_RST_MASK;
-		val = ZYNQMP_SD1_DLL_RST;
+		mask = HPSC_SD1_DLL_RST_MASK;
+		val = HPSC_SD1_DLL_RST;
 	} else {
 		return PM_RET_ERROR_ARGS;
 	}
@@ -246,7 +246,7 @@ static enum pm_ret_status pm_ioctl_sd_dll_reset(enum pm_node_id nid,
 	switch (type) {
 	case PM_DLL_RESET_ASSERT:
 	case PM_DLL_RESET_PULSE:
-		ret = pm_mmio_write(ZYNQMP_SD_DLL_CTRL, mask, val);
+		ret = pm_mmio_write(HPSC_SD_DLL_CTRL, mask, val);
 		if (ret)
 			return ret;
 
@@ -254,7 +254,7 @@ static enum pm_ret_status pm_ioctl_sd_dll_reset(enum pm_node_id nid,
 			break;
 		mdelay(1);
 	case PM_DLL_RESET_RELEASE:
-		ret = pm_mmio_write(ZYNQMP_SD_DLL_CTRL, mask, 0);
+		ret = pm_mmio_write(HPSC_SD_DLL_CTRL, mask, 0);
 		break;
 	default:
 		ret = PM_RET_ERROR_ARGS;
@@ -283,7 +283,7 @@ static enum pm_ret_status pm_ioctl_sd_set_tapdelay(enum pm_node_id nid,
 	if (nid == NODE_SD_0)
 		shift = 0;
 	else if (nid == NODE_SD_1)
-		shift = ZYNQMP_SD_TAP_OFFSET;
+		shift = HPSC_SD_TAP_OFFSET;
 	else
 		return PM_RET_ERROR_ARGS;
 
@@ -292,31 +292,31 @@ static enum pm_ret_status pm_ioctl_sd_set_tapdelay(enum pm_node_id nid,
 		return ret;
 
 	if (type == PM_TAPDELAY_INPUT) {
-		ret = pm_mmio_write(ZYNQMP_SD_ITAP_DLY,
-				    ZYNQMP_SD_ITAPCHGWIN_MASK << shift,
-				    ZYNQMP_SD_ITAPCHGWIN << shift);
+		ret = pm_mmio_write(HPSC_SD_ITAP_DLY,
+				    HPSC_SD_ITAPCHGWIN_MASK << shift,
+				    HPSC_SD_ITAPCHGWIN << shift);
 		if (ret)
 			goto reset_release;
-		ret = pm_mmio_write(ZYNQMP_SD_ITAP_DLY,
-				    ZYNQMP_SD_ITAPDLYENA_MASK << shift,
-				    ZYNQMP_SD_ITAPDLYENA << shift);
+		ret = pm_mmio_write(HPSC_SD_ITAP_DLY,
+				    HPSC_SD_ITAPDLYENA_MASK << shift,
+				    HPSC_SD_ITAPDLYENA << shift);
 		if (ret)
 			goto reset_release;
-		ret = pm_mmio_write(ZYNQMP_SD_ITAP_DLY,
-				    ZYNQMP_SD_ITAPDLYSEL_MASK << shift,
+		ret = pm_mmio_write(HPSC_SD_ITAP_DLY,
+				    HPSC_SD_ITAPDLYSEL_MASK << shift,
 				    value << shift);
 		if (ret)
 			goto reset_release;
-		ret = pm_mmio_write(ZYNQMP_SD_ITAP_DLY,
-				    ZYNQMP_SD_ITAPCHGWIN_MASK << shift, 0);
+		ret = pm_mmio_write(HPSC_SD_ITAP_DLY,
+				    HPSC_SD_ITAPCHGWIN_MASK << shift, 0);
 	} else if (type == PM_TAPDELAY_OUTPUT) {
-		ret = pm_mmio_write(ZYNQMP_SD_OTAP_DLY,
-				    ZYNQMP_SD_OTAPDLYENA_MASK << shift,
-				    ZYNQMP_SD_OTAPDLYENA << shift);
+		ret = pm_mmio_write(HPSC_SD_OTAP_DLY,
+				    HPSC_SD_OTAPDLYENA_MASK << shift,
+				    HPSC_SD_OTAPDLYENA << shift);
 		if (ret)
 			goto reset_release;
-		ret = pm_mmio_write(ZYNQMP_SD_OTAP_DLY,
-				    ZYNQMP_SD_OTAPDLYSEL_MASK << shift,
+		ret = pm_mmio_write(HPSC_SD_OTAP_DLY,
+				    HPSC_SD_OTAPDLYSEL_MASK << shift,
 				    value << shift);
 	} else {
 		ret = PM_RET_ERROR_ARGS;
@@ -526,7 +526,7 @@ static enum pm_ret_status pm_ioctl_ulpi_reset(void)
 	enum pm_ret_status ret;
 
 	ret = pm_mmio_write(CRL_APB_BOOT_PIN_CTRL, CRL_APB_BOOT_PIN_MASK,
-			    ZYNQMP_ULPI_RESET_VAL_HIGH);
+			    HPSC_ULPI_RESET_VAL_HIGH);
 	if (ret != PM_RET_SUCCESS)
 		return ret;
 
@@ -534,7 +534,7 @@ static enum pm_ret_status pm_ioctl_ulpi_reset(void)
 	mdelay(1);
 
 	ret = pm_mmio_write(CRL_APB_BOOT_PIN_CTRL, CRL_APB_BOOT_PIN_MASK,
-			    ZYNQMP_ULPI_RESET_VAL_LOW);
+			    HPSC_ULPI_RESET_VAL_LOW);
 	if (ret != PM_RET_SUCCESS)
 		return ret;
 
@@ -542,7 +542,7 @@ static enum pm_ret_status pm_ioctl_ulpi_reset(void)
 	mdelay(1);
 
 	ret = pm_mmio_write(CRL_APB_BOOT_PIN_CTRL, CRL_APB_BOOT_PIN_MASK,
-			    ZYNQMP_ULPI_RESET_VAL_HIGH);
+			    HPSC_ULPI_RESET_VAL_HIGH);
 
 	return ret;
 }

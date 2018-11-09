@@ -14,8 +14,8 @@
 #include <mmio.h>
 #include <runtime_svc.h>
 #include <string.h>
-#include "zynqmp_ipi.h"
-#include "../zynqmp_private.h"
+#include "hpsc_ipi.h"
+#include "../hpsc_private.h"
 
 /*********************************************************************
  * Macros definitions
@@ -33,14 +33,14 @@
 #define IPI_IDR_OFFSET  0x1CU
 
 /* IPI register start offset */
-#define IPI_REG_BASE(I) (zynqmp_ipi_table[(I)].ipi_reg_base)
+#define IPI_REG_BASE(I) (hpsc_ipi_table[(I)].ipi_reg_base)
 
 /* IPI register bit mask */
-#define IPI_BIT_MASK(I) (zynqmp_ipi_table[(I)].ipi_bit_mask)
+#define IPI_BIT_MASK(I) (hpsc_ipi_table[(I)].ipi_bit_mask)
 
 /* IPI secure check */
 #define IPI_SECURE_MASK  0x1U
-#define IPI_IS_SECURE(I) ((zynqmp_ipi_table[(I)].secure_only & \
+#define IPI_IS_SECURE(I) ((hpsc_ipi_table[(I)].secure_only & \
 			   IPI_SECURE_MASK) ? 1 : 0)
 
 /*********************************************************************
@@ -48,14 +48,14 @@
  ********************************************************************/
 
 /* structure to maintain IPI configuration information */
-struct zynqmp_ipi_config {
+struct hpsc_ipi_config {
 	unsigned int ipi_bit_mask;
 	unsigned int ipi_reg_base;
 	unsigned char secure_only;
 };
 
 /* ZynqMP ipi configuration table */
-const static struct zynqmp_ipi_config zynqmp_ipi_table[] = {
+const static struct hpsc_ipi_config hpsc_ipi_table[] = {
 	/* APU IPI */
 	{
 		.ipi_bit_mask = 0x1,
@@ -134,7 +134,7 @@ const static struct zynqmp_ipi_config zynqmp_ipi_table[] = {
 static inline int is_ipi_mb_within_range(uint32_t local, uint32_t remote)
 {
 	int ret = 1;
-	uint32_t ipi_total = ARRAY_SIZE(zynqmp_ipi_table);
+	uint32_t ipi_total = ARRAY_SIZE(hpsc_ipi_table);
 
 	if (remote >= ipi_total || local >= ipi_total)
 		ret = 0;

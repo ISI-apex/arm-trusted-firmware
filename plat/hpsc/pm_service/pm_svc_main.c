@@ -15,9 +15,9 @@
 #include "pm_api_sys.h"
 #include "pm_client.h"
 #include "pm_ipi.h"
-#include "../zynqmp_private.h"
+#include "../hpsc_private.h"
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 #include <arch_helpers.h>
 #include <platform.h>
 #include <spinlock.h>
@@ -29,7 +29,7 @@
 
 /* !0 - UP, 0 - DOWN */
 static int32_t pm_up = 0;
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 static spinlock_t inc_lock;
 static int active_cores = 0;
 #endif
@@ -44,7 +44,7 @@ static struct {
 	uint32_t payload[PAYLOAD_ARG_CNT];
 } pm_ctx;
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 /**
  * trigger_warm_restart() - Trigger warm restart event to APU cores
  *
@@ -112,7 +112,7 @@ static uint64_t ttc_fiq_handler(uint32_t id, uint32_t flags, void *handle,
 	return 0;
 }
 /**
- * zynqmp_sgi7_irq() - Handler for SGI7 IRQ
+ * hpsc_sgi7_irq() - Handler for SGI7 IRQ
  * @id		number of the highest priority pending interrupt of the type
  *		that this handler was registered for
  * @flags	security state, bit[0]
@@ -126,7 +126,7 @@ static uint64_t ttc_fiq_handler(uint32_t id, uint32_t flags, void *handle,
  * In response to SGI7 interrupt, each CPUs do clean up if required and last
  * running CPU calls system restart.
  */
-static uint64_t __unused __dead2 zynqmp_sgi7_irq(uint32_t id, uint32_t flags,
+static uint64_t __unused __dead2 hpsc_sgi7_irq(uint32_t id, uint32_t flags,
 						 void *handle, void *cookie)
 {
 	int i;
@@ -166,7 +166,7 @@ static int pm_warm_restart_setup(void)
 	int ret;
 
 	/* register IRQ handler for SGI7 */
-	ret = request_intr_type_el3(ARM_IRQ_SEC_SGI_7, zynqmp_sgi7_irq);
+	ret = request_intr_type_el3(ARM_IRQ_SEC_SGI_7, hpsc_sgi7_irq);
 	if (ret) {
 		WARN("BL31: registering SGI7 interrupt failed\n");
 		goto err;
@@ -204,7 +204,7 @@ int pm_setup(void)
 		goto err;
 	}
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 	status = pm_warm_restart_setup();
 	if (status) {
 		WARN("BL31: warm-restart setup failed\n");
@@ -534,7 +534,7 @@ uint64_t pm_smc_handler(uint32_t smc_fid, uint64_t x1, uint64_t x2, uint64_t x3,
 
 	case PM_GET_TRUSTZONE_VERSION:
 		SMC_RET1(handle, (uint64_t)PM_RET_SUCCESS |
-			 ((uint64_t)ZYNQMP_TZ_VERSION << 32));
+			 ((uint64_t)HPSC_TZ_VERSION << 32));
 
 	case PM_SECURE_IMAGE:
 	{

@@ -9,7 +9,7 @@
 #include <debug.h>
 #include <plat_arm.h>
 #include <platform_tsp.h>
-#include "../zynqmp_private.h"
+#include "../hpsc_private.h"
 
 #define BL32_END (unsigned long)(&__BL32_END__)
 
@@ -22,11 +22,11 @@ void tsp_early_platform_setup(void)
 	 * Initialize a different console than already in use to display
 	 * messages from TSP
 	 */
-	console_init(ZYNQMP_UART_BASE, zynqmp_get_uart_clk(),
-		     ZYNQMP_UART_BAUDRATE);
+	console_init(HPSC_UART_BASE, hpsc_get_uart_clk(),
+		     HPSC_UART_BAUDRATE);
 
 	/* Initialize the platform config for future decision making */
-	zynqmp_config_setup();
+	hpsc_config_setup();
 }
 
 /*******************************************************************************

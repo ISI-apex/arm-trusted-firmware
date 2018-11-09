@@ -43,7 +43,7 @@ endfunc plat_secondary_cold_boot_setup
 func plat_is_my_cpu_primary
 	mov	x9, x30
 	bl	plat_my_core_pos
-	cmp	x0, #ZYNQMP_PRIMARY_CPU
+	cmp	x0, #HPSC_PRIMARY_CPU
 	cset	x0, eq
 	ret	x9
 endfunc plat_is_my_cpu_primary

@@ -9,8 +9,8 @@
 #include <mmio.h>
 #include <platform.h>
 #include <arch_helpers.h>
-#include "../zynqmp_ipi.h"
-#include "../zynqmp_private.h"
+#include "../hpsc_ipi.h"
+#include "../hpsc_private.h"
 #include "pm_ipi.h"
 
 /* IPI message buffers */

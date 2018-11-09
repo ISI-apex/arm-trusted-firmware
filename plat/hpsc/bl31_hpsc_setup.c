@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <plat_arm.h>
 #include <platform.h>
-#include "zynqmp_private.h"
+#include "hpsc_private.h"
 
 #define BL31_END (unsigned long)(&__BL31_END__)
 
@@ -57,11 +57,11 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 			       void *plat_params_from_bl2)
 {
 	/* Initialize the console to provide early debug support */
-	console_init(ZYNQMP_UART_BASE, zynqmp_get_uart_clk(),
-		     ZYNQMP_UART_BAUDRATE);
+	console_init(HPSC_UART_BASE, hpsc_get_uart_clk(),
+		     HPSC_UART_BAUDRATE);
 
 	/* Initialize the platform config for future decision making */
-	zynqmp_config_setup();
+	hpsc_config_setup();
 
 	/* There are no parameters from BL2 if BL31 is a reset vector */
 	assert(from_bl2 == NULL);
@@ -69,7 +69,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 
 	/*
 	 * Do initial security configuration to allow DRAM/device access. On
-	 * Base ZYNQMP only DRAM security is programmable (via TrustZone), but
+	 * Base HPSC only DRAM security is programmable (via TrustZone), but
 	 * other platforms might have more programmable security devices
 	 * present.
 	 */
@@ -80,7 +80,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-	if (zynqmp_get_bootmode() == ZYNQMP_BOOTMODE_JTAG) {
+	if (hpsc_get_bootmode() == HPSC_BOOTMODE_JTAG) {
 		bl31_set_default_config();
 	} else {
 		/* use parameters from FSBL */
@@ -97,10 +97,10 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 }
 
 /* Enable the test setup */
-#ifndef ZYNQMP_TESTING
-static void zynqmp_testing_setup(void) { }
+#ifndef HPSC_TESTING
+static void hpsc_testing_setup(void) { }
 #else
-static void zynqmp_testing_setup(void)
+static void hpsc_testing_setup(void)
 {
 	uint32_t actlr_el3, actlr_el2;
 
@@ -115,7 +115,7 @@ static void zynqmp_testing_setup(void)
 }
 #endif
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 static interrupt_type_handler_t type_el3_interrupt_table[MAX_INTR_EL3];
 
 /* Register INTR_TYPE_EL3 interrupt handler to specific GIC entrance */
@@ -154,13 +154,13 @@ void bl31_platform_setup(void)
 	/* Initialize the gic cpu and distributor interfaces */
 	plat_arm_gic_driver_init();
 	plat_arm_gic_init();
-	zynqmp_testing_setup();
+	hpsc_testing_setup();
 }
 
 void bl31_plat_runtime_setup(void)
 {
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 	uint64_t flags = 0;
 	uint64_t rc;
 

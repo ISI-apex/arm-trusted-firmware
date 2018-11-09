@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <xlat_tables.h>
-#include "../zynqmp_private.h"
+#include "../hpsc_private.h"
 #include "pm_api_sys.h"
 
 /*
@@ -26,30 +26,30 @@ const mmap_region_t plat_arm_mmap[] = {
 	{0}
 };
 
-static unsigned int zynqmp_get_silicon_ver(void)
+static unsigned int hpsc_get_silicon_ver(void)
 {
 	static unsigned int ver;
 
 	if (!ver) {
-		ver = mmio_read_32(ZYNQMP_CSU_BASEADDR +
-				   ZYNQMP_CSU_VERSION_OFFSET);
-		ver &= ZYNQMP_SILICON_VER_MASK;
-		ver >>= ZYNQMP_SILICON_VER_SHIFT;
+		ver = mmio_read_32(HPSC_CSU_BASEADDR +
+				   HPSC_CSU_VERSION_OFFSET);
+		ver &= HPSC_SILICON_VER_MASK;
+		ver >>= HPSC_SILICON_VER_SHIFT;
 	}
 
 	return ver;
 }
 
-unsigned int zynqmp_get_uart_clk(void)
+unsigned int hpsc_get_uart_clk(void)
 {
-	unsigned int ver = zynqmp_get_silicon_ver();
+	unsigned int ver = hpsc_get_silicon_ver();
 
 	switch (ver) {
-	case ZYNQMP_CSU_VERSION_VELOCE:
+	case HPSC_CSU_VERSION_VELOCE:
 		return 48000;
-	case ZYNQMP_CSU_VERSION_EP108:
+	case HPSC_CSU_VERSION_EP108:
 		return 25000000;
-	case ZYNQMP_CSU_VERSION_QEMU:
+	case HPSC_CSU_VERSION_QEMU:
 		return 133000000;
 	}
 
@@ -62,7 +62,7 @@ static const struct {
 	unsigned int ver;
 	char *name;
 	bool evexists;
-} zynqmp_devices[] = {
+} hpsc_devices[] = {
 	{
 		.id = 0x10,
 		.name = "3EG",
@@ -194,11 +194,11 @@ static const struct {
 	},
 };
 
-#define ZYNQMP_PL_STATUS_BIT	9
-#define ZYNQMP_PL_STATUS_MASK	BIT(ZYNQMP_PL_STATUS_BIT)
-#define ZYNQMP_CSU_VERSION_MASK	~(ZYNQMP_PL_STATUS_MASK)
+#define HPSC_PL_STATUS_BIT	9
+#define HPSC_PL_STATUS_MASK	BIT(HPSC_PL_STATUS_BIT)
+#define HPSC_CSU_VERSION_MASK	~(HPSC_PL_STATUS_MASK)
 
-static char *zynqmp_get_silicon_idcode_name(void)
+static char *hpsc_get_silicon_idcode_name(void)
 {
 	uint32_t id, ver, chipid[2];
 	size_t i, j, len;
@@ -209,106 +209,106 @@ static char *zynqmp_get_silicon_idcode_name(void)
 	if (ret)
 		return "UNKN";
 
-	id = chipid[0] & (ZYNQMP_CSU_IDCODE_DEVICE_CODE_MASK |
-			  ZYNQMP_CSU_IDCODE_SVD_MASK);
-	id >>= ZYNQMP_CSU_IDCODE_SVD_SHIFT;
-	ver = chipid[1] >> ZYNQMP_EFUSE_IPDISABLE_SHIFT;
+	id = chipid[0] & (HPSC_CSU_IDCODE_DEVICE_CODE_MASK |
+			  HPSC_CSU_IDCODE_SVD_MASK);
+	id >>= HPSC_CSU_IDCODE_SVD_SHIFT;
+	ver = chipid[1] >> HPSC_EFUSE_IPDISABLE_SHIFT;
 
-	for (i = 0; i < ARRAY_SIZE(zynqmp_devices); i++) {
-		if (zynqmp_devices[i].id == id &&
-		    zynqmp_devices[i].ver == (ver & ZYNQMP_CSU_VERSION_MASK))
+	for (i = 0; i < ARRAY_SIZE(hpsc_devices); i++) {
+		if (hpsc_devices[i].id == id &&
+		    hpsc_devices[i].ver == (ver & HPSC_CSU_VERSION_MASK))
 			break;
 	}
 
-	if (i >= ARRAY_SIZE(zynqmp_devices))
+	if (i >= ARRAY_SIZE(hpsc_devices))
 		return "UNKN";
 
-	if (!zynqmp_devices[i].evexists)
-		return zynqmp_devices[i].name;
+	if (!hpsc_devices[i].evexists)
+		return hpsc_devices[i].name;
 
-	if (ver & ZYNQMP_PL_STATUS_MASK)
-		return zynqmp_devices[i].name;
+	if (ver & HPSC_PL_STATUS_MASK)
+		return hpsc_devices[i].name;
 
-	len = strlen(zynqmp_devices[i].name) - 2;
+	len = strlen(hpsc_devices[i].name) - 2;
 	for (j = 0; j < strlen(name); j++) {
-		zynqmp_devices[i].name[len] = name[j];
+		hpsc_devices[i].name[len] = name[j];
 		len++;
 	}
-	zynqmp_devices[i].name[len] = '\0';
+	hpsc_devices[i].name[len] = '\0';
 
-	return zynqmp_devices[i].name;
+	return hpsc_devices[i].name;
 }
 
-static unsigned int zynqmp_get_rtl_ver(void)
+static unsigned int hpsc_get_rtl_ver(void)
 {
 	uint32_t ver;
 
-	ver = mmio_read_32(ZYNQMP_CSU_BASEADDR + ZYNQMP_CSU_VERSION_OFFSET);
-	ver &= ZYNQMP_RTL_VER_MASK;
-	ver >>= ZYNQMP_RTL_VER_SHIFT;
+	ver = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_VERSION_OFFSET);
+	ver &= HPSC_RTL_VER_MASK;
+	ver >>= HPSC_RTL_VER_SHIFT;
 
 	return ver;
 }
 
-static char *zynqmp_print_silicon_idcode(void)
+static char *hpsc_print_silicon_idcode(void)
 {
 	uint32_t id, maskid, tmp;
 
-	id = mmio_read_32(ZYNQMP_CSU_BASEADDR + ZYNQMP_CSU_IDCODE_OFFSET);
+	id = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_IDCODE_OFFSET);
 
 	tmp = id;
-	tmp &= ZYNQMP_CSU_IDCODE_XILINX_ID_MASK |
-	       ZYNQMP_CSU_IDCODE_FAMILY_MASK;
-	maskid = ZYNQMP_CSU_IDCODE_XILINX_ID << ZYNQMP_CSU_IDCODE_XILINX_ID_SHIFT |
-		 ZYNQMP_CSU_IDCODE_FAMILY << ZYNQMP_CSU_IDCODE_FAMILY_SHIFT;
+	tmp &= HPSC_CSU_IDCODE_XILINX_ID_MASK |
+	       HPSC_CSU_IDCODE_FAMILY_MASK;
+	maskid = HPSC_CSU_IDCODE_XILINX_ID << HPSC_CSU_IDCODE_XILINX_ID_SHIFT |
+		 HPSC_CSU_IDCODE_FAMILY << HPSC_CSU_IDCODE_FAMILY_SHIFT;
 	if (tmp != maskid) {
 		ERROR("Incorrect XILINX IDCODE 0x%x, maskid 0x%x\n", id, maskid);
 		return "UNKN";
 	}
 	VERBOSE("Xilinx IDCODE 0x%x\n", id);
-	return zynqmp_get_silicon_idcode_name();
+	return hpsc_get_silicon_idcode_name();
 }
 
-static unsigned int zynqmp_get_ps_ver(void)
+static unsigned int hpsc_get_ps_ver(void)
 {
-	uint32_t ver = mmio_read_32(ZYNQMP_CSU_BASEADDR + ZYNQMP_CSU_VERSION_OFFSET);
+	uint32_t ver = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_VERSION_OFFSET);
 
-	ver &= ZYNQMP_PS_VER_MASK;
-	ver >>= ZYNQMP_PS_VER_SHIFT;
+	ver &= HPSC_PS_VER_MASK;
+	ver >>= HPSC_PS_VER_SHIFT;
 
 	return ver + 1;
 }
 
-static void zynqmp_print_platform_name(void)
+static void hpsc_print_platform_name(void)
 {
-	unsigned int ver = zynqmp_get_silicon_ver();
-	unsigned int rtl = zynqmp_get_rtl_ver();
+	unsigned int ver = hpsc_get_silicon_ver();
+	unsigned int rtl = hpsc_get_rtl_ver();
 	char *label = "Unknown";
 
 	switch (ver) {
-	case ZYNQMP_CSU_VERSION_VELOCE:
+	case HPSC_CSU_VERSION_VELOCE:
 		label = "VELOCE";
 		break;
-	case ZYNQMP_CSU_VERSION_EP108:
+	case HPSC_CSU_VERSION_EP108:
 		label = "EP108";
 		break;
-	case ZYNQMP_CSU_VERSION_QEMU:
+	case HPSC_CSU_VERSION_QEMU:
 		label = "QEMU";
 		break;
-	case ZYNQMP_CSU_VERSION_SILICON:
+	case HPSC_CSU_VERSION_SILICON:
 		label = "silicon";
 		break;
 	}
 
 	NOTICE("ATF running on XCZU%s/%s v%d/RTL%d.%d at 0x%x\n",
-	       zynqmp_print_silicon_idcode(), label, zynqmp_get_ps_ver(),
+	       hpsc_print_silicon_idcode(), label, hpsc_get_ps_ver(),
 	       (rtl & 0xf0) >> 4, rtl & 0xf, BL31_BASE);
 }
 #else
-static inline void zynqmp_print_platform_name(void) { }
+static inline void hpsc_print_platform_name(void) { }
 #endif
 
-unsigned int zynqmp_get_bootmode(void)
+unsigned int hpsc_get_bootmode(void)
 {
 	uint32_t r;
 	unsigned int ret;
@@ -322,29 +322,29 @@ unsigned int zynqmp_get_bootmode(void)
 	return r & CRL_APB_BOOT_MODE_MASK;
 }
 
-void zynqmp_config_setup(void)
+void hpsc_config_setup(void)
 {
-	zynqmp_print_platform_name();
+	hpsc_print_platform_name();
 	generic_delay_timer_init();
 }
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-	unsigned int ver = zynqmp_get_silicon_ver();
+	unsigned int ver = hpsc_get_silicon_ver();
 
 	switch (ver) {
-	case ZYNQMP_CSU_VERSION_VELOCE:
+	case HPSC_CSU_VERSION_VELOCE:
 		return 10000;
-	case ZYNQMP_CSU_VERSION_EP108:
+	case HPSC_CSU_VERSION_EP108:
 		return 4000000;
-	case ZYNQMP_CSU_VERSION_QEMU:
+	case HPSC_CSU_VERSION_QEMU:
 		return 50000000;
 	}
 
 	return mmio_read_32(IOU_SCNTRS_BASEFREQ);
 }
 
-#if ZYNQMP_WARM_RESTART
+#if HPSC_WARM_RESTART
 #include <gic_common.h>
 #include <gicv2.h>
 
