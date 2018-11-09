@@ -5,6 +5,7 @@
 override ERRATA_A53_855873 := 1
 override ENABLE_PLAT_COMPAT := 0
 override PROGRAMMABLE_RESET_ADDRESS := 1
+MULTI_CONSOLE_API := 1
 PSCI_EXTENDED_STATE_ID := 1
 A53_DISABLE_NON_TEMPORAL_HINT := 0
 SEPARATE_CODE_AND_RODATA := 1
@@ -55,7 +56,7 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				drivers/arm/gic/common/gic_common.c		\
 				drivers/arm/gic/v2/gicv2_main.c			\
 				drivers/arm/gic/v2/gicv2_helpers.c		\
-				drivers/console/aarch64/console.S		\
+				drivers/console/aarch64/multi_console.S		\
 				plat/arm/common/arm_cci.c			\
 				plat/arm/common/arm_common.c			\
 				plat/arm/common/arm_gicv2.c			\

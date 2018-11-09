@@ -140,15 +140,11 @@
 
 #if HPSC_CONSOLE_IS(cadence) || HPSC_CONSOLE_IS(dcc)
 # define HPSC_UART_BASE	HPSC_UART0_BASE
-#elif HPSC_CONSOLE_IS(cadence1)
-# define HPSC_UART_BASE	HPSC_UART1_BASE
 #else
 # error "invalid HPSC_CONSOLE"
 #endif
 
-#define PLAT_ARM_CRASH_UART_BASE	HPSC_UART_BASE
-/* impossible to call C routine how it is done now - hardcode any value */
-#define	PLAT_ARM_CRASH_UART_CLK_IN_HZ	100000000 /* FIXME */
+#define HPSC_UART_CLOCK         100000000
 
 /* Must be non zero */
 #define HPSC_UART_BAUDRATE	115200
