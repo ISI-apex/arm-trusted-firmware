@@ -64,133 +64,8 @@ static const struct {
 	bool evexists;
 } hpsc_devices[] = {
 	{
-		.id = 0x10,
-		.name = "3EG",
-	},
-	{
-		.id = 0x10,
-		.ver = 0x2c,
-		.name = "3CG",
-	},
-	{
-		.id = 0x11,
-		.name = "2EG",
-	},
-	{
-		.id = 0x11,
-		.ver = 0x2c,
-		.name = "2CG",
-	},
-	{
-		.id = 0x20,
-		.name = "5EV",
-		.evexists = 1,
-	},
-	{
-		.id = 0x20,
-		.ver = 0x100,
-		.name = "5EG",
-		.evexists = 1,
-	},
-	{
-		.id = 0x20,
-		.ver = 0x12c,
-		.name = "5CG",
-	},
-	{
-		.id = 0x21,
-		.name = "4EV",
-		.evexists = 1,
-	},
-	{
-		.id = 0x21,
-		.ver = 0x100,
-		.name = "4EG",
-		.evexists = 1,
-	},
-	{
-		.id = 0x21,
-		.ver = 0x12c,
-		.name = "4CG",
-	},
-	{
-		.id = 0x30,
-		.name = "7EV",
-		.evexists = 1,
-	},
-	{
-		.id = 0x30,
-		.ver = 0x100,
-		.name = "7EG",
-		.evexists = 1,
-	},
-	{
-		.id = 0x30,
-		.ver = 0x12c,
-		.name = "7CG",
-	},
-	{
-		.id = 0x38,
-		.name = "9EG",
-	},
-	{
-		.id = 0x38,
-		.ver = 0x2c,
-		.name = "9CG",
-	},
-	{
-		.id = 0x39,
-		.name = "6EG",
-	},
-	{
-		.id = 0x39,
-		.ver = 0x2c,
-		.name = "6CG",
-	},
-	{
-		.id = 0x40,
-		.name = "11EG",
-	},
-	{ /* For testing purpose only */
-		.id = 0x50,
-		.ver = 0x2c,
-		.name = "15CG",
-	},
-	{
-		.id = 0x50,
-		.name = "15EG",
-	},
-	{
-		.id = 0x58,
-		.name = "19EG",
-	},
-	{
-		.id = 0x59,
-		.name = "17EG",
-	},
-	{
-		.id = 0x60,
-		.name = "28DR",
-	},
-	{
-		.id = 0x61,
-		.name = "21DR",
-	},
-	{
-		.id = 0x62,
-		.name = "29DR",
-	},
-	{
-		.id = 0x63,
-		.name = "23DR",
-	},
-	{
-		.id = 0x64,
-		.name = "27DR",
-	},
-	{
-		.id = 0x65,
-		.name = "25DR",
+		.id = 0x00,
+		.name = "NONAME",
 	},
 };
 
@@ -257,15 +132,15 @@ static char *hpsc_print_silicon_idcode(void)
 	id = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_IDCODE_OFFSET);
 
 	tmp = id;
-	tmp &= HPSC_CSU_IDCODE_XILINX_ID_MASK |
+	tmp &= HPSC_CSU_IDCODE_HPSC_ID_MASK |
 	       HPSC_CSU_IDCODE_FAMILY_MASK;
-	maskid = HPSC_CSU_IDCODE_XILINX_ID << HPSC_CSU_IDCODE_XILINX_ID_SHIFT |
+	maskid = HPSC_CSU_IDCODE_HPSC_ID << HPSC_CSU_IDCODE_HPSC_ID_SHIFT |
 		 HPSC_CSU_IDCODE_FAMILY << HPSC_CSU_IDCODE_FAMILY_SHIFT;
 	if (tmp != maskid) {
-		ERROR("Incorrect XILINX IDCODE 0x%x, maskid 0x%x\n", id, maskid);
+		ERROR("Incorrect HPSC IDCODE 0x%x, maskid 0x%x\n", id, maskid);
 		return "UNKN";
 	}
-	VERBOSE("Xilinx IDCODE 0x%x\n", id);
+	VERBOSE("HPSC IDCODE 0x%x\n", id);
 	return hpsc_get_silicon_idcode_name();
 }
 
@@ -300,7 +175,7 @@ static void hpsc_print_platform_name(void)
 		break;
 	}
 
-	NOTICE("ATF running on XCZU%s/%s v%d/RTL%d.%d at 0x%x\n",
+	NOTICE("ATF running on HPSC %s/%s v%d/RTL%d.%d at 0x%x\n",
 	       hpsc_print_silicon_idcode(), label, hpsc_get_ps_ver(),
 	       (rtl & 0xf0) >> 4, rtl & 0xf, BL31_BASE);
 }
