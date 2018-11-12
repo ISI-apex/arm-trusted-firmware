@@ -58,8 +58,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
                                 u_register_t arg2, u_register_t arg3)
 {
 	static console_cdns_t console;
+#if DEBUG
 	void *from_bl2 = (void *)arg0;
 	void *plat_params_from_bl2 = (void *)arg1;
+#endif
 
 	/* Initialize the console to provide early debug support */
 	console_cdns_register(HPSC_UART_BASE, HPSC_UART_CLOCK,
