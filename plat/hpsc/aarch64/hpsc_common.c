@@ -205,18 +205,9 @@ void hpsc_config_setup(void)
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-	unsigned int ver = hpsc_get_silicon_ver();
-
-	switch (ver) {
-	case HPSC_CSU_VERSION_VELOCE:
-		return 10000;
-	case HPSC_CSU_VERSION_EP108:
-		return 4000000;
-	case HPSC_CSU_VERSION_QEMU:
-		return 50000000;
-	}
-
-	return mmio_read_32(IOU_SCNTRS_BASEFREQ);
+        /* Frequency of the HPSC Elapsed Timer, which drives the per-cpu
+         * Generic Timers. Value not available via any metainfo reg afaik. */
+        return 125000000;
 }
 
 #if HPSC_WARM_RESTART
