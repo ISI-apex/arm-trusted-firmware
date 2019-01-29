@@ -63,9 +63,9 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				plat/hpsc/aarch64/hpsc_helpers.S		\
 				plat/hpsc/aarch64/hpsc_common.c
 
-HPSC_CONSOLE	?=	cadence
-ifeq (${HPSC_CONSOLE}, $(filter ${HPSC_CONSOLE},cadence cadence0 cadence1))
-  PLAT_BL_COMMON_SOURCES += drivers/cadence/uart/aarch64/cdns_console.S
+HPSC_CONSOLE	?=	16550
+ifeq (${HPSC_CONSOLE}, $(filter ${HPSC_CONSOLE},16550))
+  PLAT_BL_COMMON_SOURCES += drivers/ti/uart/aarch64/16550_console.S
 else ifeq (${HPSC_CONSOLE}, dcc)
   PLAT_BL_COMMON_SOURCES += \
 			    drivers/arm/dcc/dcc_console.c

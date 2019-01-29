@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <plat_arm.h>
 #include <platform.h>
-#include <drivers/cadence/cdns_uart.h>
+#include <uart_16550.h>
 #include "hpsc_private.h"
 
 #define BL31_END (unsigned long)(&__BL31_END__)
@@ -57,15 +57,15 @@ static inline void bl31_set_default_config(void) {
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
                                 u_register_t arg2, u_register_t arg3)
 {
-	static console_cdns_t console;
+	static console_16550_t console;
 #if DEBUG
 	void *from_bl2 = (void *)arg0;
 	void *plat_params_from_bl2 = (void *)arg1;
 #endif
 
 	/* Initialize the console to provide early debug support */
-	console_cdns_register(HPSC_UART_BASE, HPSC_UART_CLOCK,
-			      HPSC_UART_BAUDRATE, &console);
+	console_16550_register(HPSC_UART_BASE, HPSC_UART_CLOCK,
+			       HPSC_UART_BAUDRATE, &console);
 
 	/* Initialize the platform config for future decision making */
 	hpsc_config_setup();

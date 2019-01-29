@@ -9,10 +9,8 @@
 
 #include <common_def.h>
 
-#define HPSC_CONSOLE_ID_cadence	1
-#define HPSC_CONSOLE_ID_cadence0	1
-#define HPSC_CONSOLE_ID_cadence1	2
-#define HPSC_CONSOLE_ID_dcc		3
+#define HPSC_CONSOLE_ID_16550           1
+/* #define HPSC_CONSOLE_ID_dcc		2 */
 
 #define HPSC_CONSOLE_IS(con)	(HPSC_CONSOLE_ID_ ## con == HPSC_CONSOLE)
 
@@ -151,7 +149,7 @@
  ******************************************************************************/
 #define HPSC_UART0_BASE		0xF92C0000
 
-#if HPSC_CONSOLE_IS(cadence) || HPSC_CONSOLE_IS(dcc)
+#if HPSC_CONSOLE_IS(16550)
 # define HPSC_UART_BASE	HPSC_UART0_BASE
 #else
 # error "invalid HPSC_CONSOLE"
