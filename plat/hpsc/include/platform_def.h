@@ -40,7 +40,7 @@
  */
 #ifndef HPSC_ATF_MEM_BASE
 # define BL31_BASE			0x80000000
-# define BL31_LIMIT			0x800fffff
+# define BL31_LIMIT			0x8001ffff
 #else
 # define BL31_BASE			(HPSC_ATF_MEM_BASE)
 # define BL31_LIMIT			(HPSC_ATF_MEM_BASE + HPSC_ATF_MEM_SIZE - 1)
@@ -64,7 +64,7 @@
  * BL33 specific defines.
  ******************************************************************************/
 #ifndef PRELOADED_BL33_BASE
-# define PLAT_ARM_NS_IMAGE_OFFSET	0x88000000
+# define PLAT_ARM_NS_IMAGE_OFFSET	0x80020000
 #else
 # define PLAT_ARM_NS_IMAGE_OFFSET	PRELOADED_BL33_BASE
 #endif
