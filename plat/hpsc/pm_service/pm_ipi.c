@@ -13,6 +13,17 @@
 #include "../hpsc_private.h"
 #include "pm_ipi.h"
 
+#if TRCH_SERVER
+#include <gicv3.h>
+#include "gic.h"
+#include "hwinfo.h"
+#include "mailbox.h"
+#include "mailbox-link.h"
+#include "mailbox-map.h"
+#include "hpsc-irqs.dtsh"
+#include "command.h"
+#endif
+
 /* IPI message buffers */
 #define IPI_BUFFER_BASEADDR	0xFF990000U
 
@@ -38,6 +49,13 @@ const struct pm_ipi apu_ipi = {
 	.buffer_base = IPI_BUFFER_APU_BASE,
 };
 
+#if TRCH_SERVER
+#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 28 */
+#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 29 */
+
+struct link *trch_atf_link;
+#endif
+
 /**
  * pm_ipi_init() - Initialize IPI peripheral for communication with PMU
  *
@@ -51,6 +69,29 @@ const struct pm_ipi apu_ipi = {
 int pm_ipi_init(const struct pm_proc *proc)
 {
 	bakery_lock_init(&pm_secure_lock);
+#if TRCH_SERVER
+	gic_init((volatile uint32_t *)HPPS_GIC_BASE);
+	struct irq *hpps_rcv_irq = 
+		gic_request(HPPS_IRQ__HT_MBOX_0 + HPPS_RCV_IRQ_IDX,
+		 	GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
+	struct irq *hpps_ack_irq =
+		gic_request(HPPS_IRQ__HT_MBOX_0 + HPPS_ACK_IRQ_IDX,
+			GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
+
+
+	trch_atf_link = mbox_link_connect("TRCH_MBOX_ATF_LINK",
+			MBOX_HPPS_TRCH__BASE,
+			MBOX_HPPS_TRCH__TRCH_ATF_HPPS, MBOX_HPPS_TRCH__HPPS_ATF_TRCH,
+			hpps_rcv_irq, HPPS_RCV_IRQ_IDX, /* 28 */
+			hpps_ack_irq, HPPS_ACK_IRQ_IDX, /* 29 */
+			0,
+			MASTER_ID_HPPS_CPU0);
+	if (!trch_atf_link)
+	   VERBOSE("%s: panic: TRCH_MBOX_ATF_LINK failed to be created\n", __func__);
+	else 
+   	   VERBOSE("%s: successfully initialized TRCH_MBOX_ATF_LINK \n", __func__);
+#endif
+
 	ipi_mb_open(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id);
 
 	return 0;
@@ -79,12 +120,32 @@ static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
 		mmio_write_32(buffer_base + offset, payload[i]);
 		offset += PAYLOAD_ARG_SIZE;
 	}
-	VERBOSE("pm_ipi_send_common: mmio_write_32, buffer_base(%lx): %x %x %x %x %x %x\n", 
-		buffer_base, payload[0], payload[1], payload[2], payload[3], payload[4], payload[5]);
 	/* Generate IPI to PMU */
 	ipi_mb_notify(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id,
 		      is_blocking);
 
+#if TRCH_SERVER
+	/* send PSCI command request to TRCH */
+	/* initial test code */
+	uint32_t mbox_payload[32];
+	uint32_t reply[32] = {0};
+
+	// INFO("pm_ipi_send_common: send mail to TRCH\n");
+	mbox_payload[0] = 3;	/* CMD_PSCI */
+	for (size_t i = 1; i < PAYLOAD_ARG_CNT + 1 ; i++) {
+		mbox_payload[i] = payload[i-1];
+	}
+
+#if ATF_FIQ	
+	gicv3_cpuif_enable(plat_my_core_pos());
+        gicv3_rdistif_init(plat_my_core_pos());
+#endif
+	int rc = trch_atf_link->request(trch_atf_link, 
+				CMD_TIMEOUT_MS_SEND, mbox_payload, (PAYLOAD_ARG_CNT + 1) * sizeof(uint32_t)/* sizeof(PAYLOAD_ARG_CNT+1) */,
+				CMD_TIMEOUT_MS_RECV, reply, 0);
+	if (rc < 0) 
+		return rc;
+#endif
 	return PM_RET_SUCCESS;
 }
 

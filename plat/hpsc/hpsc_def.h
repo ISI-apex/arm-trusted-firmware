@@ -26,7 +26,7 @@
  ******************************************************************************/
 /* Aggregate of all devices in the first GB */
 #define DEVICE0_BASE		0xFF000000
-#define DEVICE0_SIZE		0x00E00000
+#define DEVICE0_SIZE		0x01000000	/* extended from 0x00E00000 for hpsc-mailbox */
 #define DEVICE1_BASE		0xF9000000
 #define DEVICE1_SIZE		0x00800000
 
@@ -141,6 +141,15 @@
 #define ARM_IRQ_SEC_SGI_5		13
 #define ARM_IRQ_SEC_SGI_6		14
 #define ARM_IRQ_SEC_SGI_7		15
+
+#define ARM_IRQ_SEC_SPI_0		32
+#define ARM_IRQ_SEC_SPI_1		33
+#define ARM_IRQ_SEC_SPI_2		34
+#define ARM_IRQ_SEC_SPI_3		35
+#define ARM_IRQ_SEC_SPI_4		36
+#define ARM_IRQ_SEC_SPI_5		37
+#define ARM_IRQ_SEC_SPI_6		38
+#define ARM_IRQ_SEC_SPI_7		39
 
 #define MAX_INTR_EL3			128
 

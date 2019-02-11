@@ -10,6 +10,9 @@ PSCI_EXTENDED_STATE_ID := 1
 A53_DISABLE_NON_TEMPORAL_HINT := 0
 SEPARATE_CODE_AND_RODATA := 1
 HPSC_WARM_RESTART := 0
+TRCH_SERVER := 1
+ATF_FIQ := 0
+CONFIG_AARCH64 := 1
 override RESET_TO_BL31 := 1
 
 # Do not enable SVE
@@ -43,11 +46,25 @@ ifdef HPSC_WARM_RESTART
   $(eval $(call add_define,HPSC_WARM_RESTART))
 endif
 
+ifdef CONFIG_AARCH64
+  $(eval $(call add_define,CONFIG_ARCH64))
+endif
+
+ifdef TRCH_SERVER 
+  $(eval $(call add_define,TRCH_SERVER))
+endif
+
+ifdef ATF_FIQ
+  $(eval $(call add_define,ATF_FIQ))
+endif
+
 PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/			\
 				-Iinclude/plat/arm/common/aarch64/		\
 				-Iplat/hpsc/include/				\
+				-Iplat/hpsc/					\
 				-Iplat/hpsc/pm_service/				\
-				-Iplat/hpsc/ipi_mailbox_service/
+				-Iplat/hpsc/ipi_mailbox_service/		\
+				-Iplat/hpsc/hpsc_mailbox/		
 
 PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				lib/xlat_tables/aarch64/xlat_tables.c		\
@@ -84,6 +101,13 @@ BL31_SOURCES		+=	lib/cpus/aarch64/aem_generic.S		\
 				plat/hpsc/plat_topology.c		\
 				plat/hpsc/sip_svc_setup.c		\
 				plat/hpsc/hpsc_ipi.c			\
+				plat/hpsc/hpsc_mailbox/command.c  \
+				plat/hpsc/hpsc_mailbox/gic.c  \
+				plat/hpsc/hpsc_mailbox/intc.c \
+				plat/hpsc/hpsc_mailbox/mailbox.c  \
+				plat/hpsc/hpsc_mailbox/mailbox-link.c \
+				plat/hpsc/hpsc_mailbox/mem.c  \
+				plat/hpsc/hpsc_mailbox/object.c \
 				plat/hpsc/pm_service/pm_svc_main.c	\
 				plat/hpsc/pm_service/pm_api_sys.c	\
 				plat/hpsc/pm_service/pm_api_pinctrl.c	\
@@ -91,7 +115,7 @@ BL31_SOURCES		+=	lib/cpus/aarch64/aem_generic.S		\
 				plat/hpsc/pm_service/pm_api_clock.c	\
 				plat/hpsc/pm_service/pm_ipi.c		\
 				plat/hpsc/pm_service/pm_client.c	\
-				plat/hpsc/ipi_mailbox_service/ipi_mailbox_svc.c
+				plat/hpsc/ipi_mailbox_service/ipi_mailbox_svc.c \
 
 ifneq (${RESET_TO_BL31},1)
   $(error "Using BL31 as the reset vector is only one option supported on ZynqMP. Please set RESET_TO_BL31 to 1.")

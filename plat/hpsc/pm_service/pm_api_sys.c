@@ -569,11 +569,15 @@ enum pm_ret_status pm_fpga_get_status(unsigned int *value)
  */
 enum pm_ret_status pm_get_chipid(uint32_t *value)
 {
-	uint32_t payload[PAYLOAD_ARG_CNT];
 
+#if TRCH_SERVER
+	return PM_RET_SUCCESS;
+#else
+	uint32_t payload[PAYLOAD_ARG_CNT];
 	/* Send request to the PMU */
 	PM_PACK_PAYLOAD1(payload, PM_GET_CHIPID);
 	return pm_ipi_send_sync(primary_proc, payload, value, 2);
+#endif
 }
 
 /**

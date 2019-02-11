@@ -185,6 +185,9 @@ static inline void hpsc_print_platform_name(void) { }
 
 unsigned int hpsc_get_bootmode(void)
 {
+#if TRCH_SERVER
+	return HPSC_BOOTMODE_JTAG;
+#else
 	uint32_t r;
 	unsigned int ret;
 
@@ -195,6 +198,7 @@ unsigned int hpsc_get_bootmode(void)
 	}
 
 	return r & CRL_APB_BOOT_MODE_MASK;
+#endif
 }
 
 void hpsc_config_setup(void)

@@ -365,6 +365,11 @@ void pm_client_wakeup(const struct pm_proc *proc)
         while (mmio_read_32(PMU_GLOBAL_REQ_PWRUP_STATUS) & (1 << cpuid))
             ;
 
+#if TRCH_SERVER__
+	/* TODO */
+	trch_atf_mbox_write(HPPS_CPU_REQ_PWRUP_EN, cpuid);	/* power up */
+	trch_atf_mbox_read();	/* wait until power up */
+#endif
         /* release core reset */
         uint32_t r = mmio_read_32(CRF_APB_RST_FPD_APU);
 
@@ -383,6 +388,10 @@ void pm_client_wakeup(const struct pm_proc *proc)
         // 0xFD1A0104 <- ~(((1 << 10) | (1 << 0) << cpuid)
         // 0xFD1A0104 <- ~( 0x400 | (1 << 0) << cpuid)
 
+#if TRCH_SERVER__
+	/* TODO */
+	trch_atf_mbox_write(HPPS_CPU_RESET_RELEASE, cpuid);/* release reset */
+#endif
 
 	bakery_lock_release(&pm_client_secure_lock);
 }
