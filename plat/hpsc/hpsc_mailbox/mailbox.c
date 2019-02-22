@@ -257,20 +257,16 @@ size_t mbox_send(struct mbox *m, void *buf, size_t sz)
     if (sz % sizeof(uint32_t))
         len++;
 
-//    INFO("mbox_send: msg: ");
     volatile uint32_t *slot = (volatile uint32_t *)((uint8_t *)m->base + REG_DATA);
     for (i = 0; i < len; ++i) {
         slot[i] = msg[i];
-//        INFO("%x ", msg[i]);
     }
-//    INFO("\r\n");
     // zero out any remaining registers
     for (; i < HPSC_MBOX_DATA_REGS; i++)
         slot[i] = 0;
 
     volatile uint32_t *addr = (volatile uint32_t *)((uint8_t *)m->base + REG_EVENT_SET);
     uint32_t val = HPSC_MBOX_EVENT_A;
-//    INFO("mbox_send: raise int A: %p <- %08x\r\n", addr, val);
     *addr = val;
 
     return sz;
@@ -319,10 +315,54 @@ static void mbox_instance_rcv_isr(struct mbox *mbox)
         mbox->cb.rcv_cb(mbox->cb_arg);
 }
 
-bool mbox_get_ack(struct mbox * mbox)
+/* Todo: replace with sleep */
+static int busy_wait()
+{
+    int i, j;
+    for(i = j = 0; i < 1000; i++) {
+       j += i * (i - 2);
+    }
+    return j;
+}
+
+bool mbox_get_rcv_poll(struct mbox * mbox)
 {
     uint32_t * addr = (uint32_t *)((uint8_t *)mbox->base + REG_EVENT_STATUS);
-    uint32_t val = (* addr) & HPSC_MBOX_EVENT_B;
+    uint32_t val;
+    int i;
+    for (i = 0; i < 1000000000; i++) {
+        if (i > 0 && i % 100 == 0) printf("\r");	/* to give Qemu a chance to do context changes */
+        val = (* addr) & HPSC_MBOX_EVENT_A;
+        if (val != 0) return true;
+        busy_wait();
+    }
+    val = (* addr) & HPSC_MBOX_EVENT_A;
+    if (!val) WARN("%s: timeout, event_status(0x%x), val(0x%x)\n", __func__, *addr, val);
+    return (val != 0);
+}
+
+void mbox_clear_rcv(struct mbox * mbox)
+{
+    volatile uint32_t *addr;
+    uint32_t val;
+    addr = (volatile uint32_t *)((uint8_t *)mbox->base + REG_EVENT_CLEAR);
+    val = HPSC_MBOX_EVENT_A;
+    *addr = val;
+}
+
+bool mbox_get_ack_poll(struct mbox * mbox)
+{
+    volatile uint32_t * addr;
+    uint32_t val;
+    int i;
+    addr = (volatile uint32_t *)((uint8_t *)mbox->base + REG_EVENT_STATUS);
+    for (i = 0; i < 1000000000; i++) {
+        if (i > 0 && i % 100 == 0) printf("\r");	/* to give Qemu a chance to do context changes */
+        val = (* addr) & HPSC_MBOX_EVENT_B;
+        if (val != 0) return true;
+        busy_wait();
+    }
+    val = (* addr) & HPSC_MBOX_EVENT_B;
     return (val != 0);
 }
 
@@ -333,7 +373,6 @@ void mbox_clear_ack(struct mbox * mbox)
     addr = (volatile uint32_t *)((uint8_t *)mbox->base + REG_EVENT_CLEAR);
     val = HPSC_MBOX_EVENT_B;
     *addr = val;
-
 }
 
 static void mbox_instance_ack_isr(struct mbox *mbox)

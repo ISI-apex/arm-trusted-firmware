@@ -64,6 +64,11 @@ unsigned int pm_get_shutdown_scope()
 	PM_PACK_PAYLOAD5(pl, arg0, arg1, arg2, arg3, arg4);		\
 }
 
+#define PM_PACK_PAYLOAD7(pl, arg0, arg1, arg2, arg3, arg4, arg5, arg6) {\
+	pl[6] = (uint32_t)(arg6);					\
+	PM_PACK_PAYLOAD5(pl, arg0, arg1, arg2, arg3, arg4, arg5);	\
+}
+
 /**
  * pm_self_suspend() - PM call for processor to suspend itself
  * @nid		Node id of the processor or subsystem
@@ -143,7 +148,6 @@ enum pm_ret_status pm_req_wakeup(enum pm_node_id target,
 {
 	uint32_t payload[PAYLOAD_ARG_CNT];
 	uint64_t encoded_address;
-
 
 	/* encode set Address into 1st bit of address */
 	encoded_address = address;

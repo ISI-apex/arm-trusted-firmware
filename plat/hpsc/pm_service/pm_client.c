@@ -292,12 +292,12 @@ const struct pm_proc *primary_proc = &pm_procs_all[0];
  */
 void pm_client_suspend(const struct pm_proc *proc, unsigned int state)
 {
+	VERBOSE("%s: proc->node_id= %d : mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | 0x%x \n", __func__, proc->node_id, proc->pwrdn_mask);
 	bakery_lock_get(&pm_client_secure_lock);
 
 	if (state == PM_STATE_SUSPEND_TO_RAM)
 		pm_client_set_wakeup_sources();
 
-	VERBOSE("%s: proc->node_id= %d : mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | 0x%x \n", __func__, proc->node_id, proc->pwrdn_mask);
 	/* Set powerdown request */
 	mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | proc->pwrdn_mask);
 
@@ -333,7 +333,7 @@ void pm_client_abort_suspend(void)
  */
 void pm_client_wakeup(const struct pm_proc *proc)
 {
-	unsigned int cpuid = pm_get_cpuid(proc->node_id);
+	unsigned int cpuid = pm_get_cpuid(proc->node_id);	/* 0 .. 7 */
 
 	if (cpuid == UNDEFINED_CPUID)
 		return;
@@ -370,6 +370,7 @@ void pm_client_wakeup(const struct pm_proc *proc)
 	trch_atf_mbox_write(HPPS_CPU_REQ_PWRUP_EN, cpuid);	/* power up */
 	trch_atf_mbox_read();	/* wait until power up */
 #endif
+
         /* release core reset */
         uint32_t r = mmio_read_32(CRF_APB_RST_FPD_APU);
 
