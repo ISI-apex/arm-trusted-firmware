@@ -28,31 +28,11 @@ const mmap_region_t plat_arm_mmap[] = {
 
 static unsigned int hpsc_get_silicon_ver(void)
 {
-	static unsigned int ver;
-
-	if (!ver) {
-		ver = mmio_read_32(HPSC_CSU_BASEADDR +
-				   HPSC_CSU_VERSION_OFFSET);
-		ver &= HPSC_SILICON_VER_MASK;
-		ver >>= HPSC_SILICON_VER_SHIFT;
-	}
-
-	return ver;
+	return 0;
 }
 
 unsigned int hpsc_get_uart_clk(void)
 {
-	unsigned int ver = hpsc_get_silicon_ver();
-
-	switch (ver) {
-	case HPSC_CSU_VERSION_VELOCE:
-		return 48000;
-	case HPSC_CSU_VERSION_EP108:
-		return 25000000;
-	case HPSC_CSU_VERSION_QEMU:
-		return 133000000;
-	}
-
 	return 100000000;
 }
 
@@ -116,42 +96,19 @@ static char *hpsc_get_silicon_idcode_name(void)
 
 static unsigned int hpsc_get_rtl_ver(void)
 {
-	uint32_t ver;
-
-	ver = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_VERSION_OFFSET);
-	ver &= HPSC_RTL_VER_MASK;
-	ver >>= HPSC_RTL_VER_SHIFT;
-
-	return ver;
+	return 0;
 }
 
 static char *hpsc_print_silicon_idcode(void)
 {
-	uint32_t id, maskid, tmp;
-
-	id = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_IDCODE_OFFSET);
-
-	tmp = id;
-	tmp &= HPSC_CSU_IDCODE_HPSC_ID_MASK |
-	       HPSC_CSU_IDCODE_FAMILY_MASK;
-	maskid = HPSC_CSU_IDCODE_HPSC_ID << HPSC_CSU_IDCODE_HPSC_ID_SHIFT |
-		 HPSC_CSU_IDCODE_FAMILY << HPSC_CSU_IDCODE_FAMILY_SHIFT;
-	if (tmp != maskid) {
-		ERROR("Incorrect HPSC IDCODE 0x%x, maskid 0x%x\n", id, maskid);
-		return "UNKN";
-	}
+	unsigned id = 0;
 	VERBOSE("HPSC IDCODE 0x%x\n", id);
 	return hpsc_get_silicon_idcode_name();
 }
 
 static unsigned int hpsc_get_ps_ver(void)
 {
-	uint32_t ver = mmio_read_32(HPSC_CSU_BASEADDR + HPSC_CSU_VERSION_OFFSET);
-
-	ver &= HPSC_PS_VER_MASK;
-	ver >>= HPSC_PS_VER_SHIFT;
-
-	return ver + 1;
+	return 0;
 }
 
 static void hpsc_print_platform_name(void)
@@ -185,20 +142,7 @@ static inline void hpsc_print_platform_name(void) { }
 
 unsigned int hpsc_get_bootmode(void)
 {
-#if TRCH_SERVER
 	return HPSC_BOOTMODE_JTAG;
-#else
-	uint32_t r;
-	unsigned int ret;
-
-	ret = pm_mmio_read(CRL_APB_BOOT_MODE_USER, &r);
-
-	if (ret != PM_RET_SUCCESS) {
-		r = mmio_read_32(CRL_APB_BOOT_MODE_USER);
-	}
-
-	return r & CRL_APB_BOOT_MODE_MASK;
-#endif
 }
 
 void hpsc_config_setup(void)
