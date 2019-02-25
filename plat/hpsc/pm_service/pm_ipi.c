@@ -111,19 +111,6 @@ static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
 					     uint32_t payload[PAYLOAD_ARG_CNT],
 					     uint32_t is_blocking)
 {
-	unsigned int offset = 0;
-	uintptr_t buffer_base = proc->ipi->buffer_base +
-					IPI_BUFFER_TARGET_PMU_OFFSET +
-					IPI_BUFFER_REQ_OFFSET;
-	/* Write payload into IPI buffer */
-	for (size_t i = 0; i < PAYLOAD_ARG_CNT; i++) {
-		mmio_write_32(buffer_base + offset, payload[i]);
-		offset += PAYLOAD_ARG_SIZE;
-	}
-	/* Generate IPI to PMU */
-	ipi_mb_notify(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id,
-		      is_blocking);
-
 #if TRCH_SERVER
 	/* send PSCI command request to TRCH */
 	/* initial test code */
@@ -209,27 +196,7 @@ enum pm_ret_status pm_ipi_send(const struct pm_proc *proc,
 static enum pm_ret_status pm_ipi_buff_read(const struct pm_proc *proc,
 					   unsigned int *value, size_t count)
 {
-	size_t i;
-	uintptr_t buffer_base = proc->ipi->buffer_base +
-				IPI_BUFFER_TARGET_PMU_OFFSET +
-				IPI_BUFFER_RESP_OFFSET;
-	VERBOSE("%s: start \n", __func__);
-
-	/*
-	 * Read response from IPI buffer
-	 * buf-0: success or error+reason
-	 * buf-1: value
-	 * buf-2: unused
-	 * buf-3: unused
-	 */
-	for (i = 1; i <= count; i++) {
-		*value = mmio_read_32(buffer_base + (i * PAYLOAD_ARG_SIZE));
-	VERBOSE("%s: value[%ld] = 0x%x\n", __func__, i, *value);
-		value++;
-	}
-	VERBOSE("%s: count = %ld, read %lx \n", __func__, count, buffer_base);
-
-	return mmio_read_32(buffer_base);
+	return 0;
 }
 
 /**
@@ -241,18 +208,6 @@ static enum pm_ret_status pm_ipi_buff_read(const struct pm_proc *proc,
  */
 void pm_ipi_buff_read_callb(unsigned int *value, size_t count)
 {
-	size_t i;
-	uintptr_t buffer_base = IPI_BUFFER_PMU_BASE +
-				IPI_BUFFER_TARGET_APU_OFFSET +
-				IPI_BUFFER_REQ_OFFSET;
-
-	if (count > IPI_BUFFER_MAX_WORDS)
-		count = IPI_BUFFER_MAX_WORDS;
-
-	for (i = 0; i <= count; i++) {
-		*value = mmio_read_32(buffer_base + (i * PAYLOAD_ARG_SIZE));
-		value++;
-	}
 }
 
 /**
