@@ -164,7 +164,7 @@
 # error "invalid HPSC_CONSOLE"
 #endif
 
-#define HPSC_UART_CLOCK         100000000
+#define HPSC_UART_CLOCK         16000000
 
 /* Must be non zero */
 #define HPSC_UART_BAUDRATE	115200
