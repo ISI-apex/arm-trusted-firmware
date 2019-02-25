@@ -132,9 +132,9 @@ static void hpsc_print_platform_name(void)
 		break;
 	}
 
-	NOTICE("ATF running on HPSC %s/%s v%d/RTL%d.%d at 0x%x\n",
+	NOTICE("ATF running on HPSC %s/%s v%d/RTL%d.%d at 0x%lx\n",
 	       hpsc_print_silicon_idcode(), label, hpsc_get_ps_ver(),
-	       (rtl & 0xf0) >> 4, rtl & 0xf, BL31_BASE);
+	       (rtl & 0xf0) >> 4, rtl & 0xf, (unsigned long)(BL31_BASE));
 }
 #else
 static inline void hpsc_print_platform_name(void) { }
