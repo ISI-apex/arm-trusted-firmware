@@ -97,9 +97,6 @@ static int mbox_link_poll(struct link *link, int timeout_ms)
 {
     // TODO: timeout
     struct mbox_link *mlink = link->priv;
-#if ATF_FIQ
-    while (!mlink->cmd_ctx.reply_sz_read);
-#else
     if(!mbox_get_rcv_poll(mlink->mbox_from))
         WARN("%s: Didn't get ACK, the following mbox_read may be wrong\r\n", __func__);
     mlink->cmd_ctx.reply_sz_read = mbox_read(mlink->mbox_from,
@@ -107,7 +104,6 @@ static int mbox_link_poll(struct link *link, int timeout_ms)
                                              mlink->cmd_ctx.reply_sz);
     WARN("%s: received (0x%lx) bytes\r\n", __func__, mlink->cmd_ctx.reply_sz_read);
     mbox_clear_rcv(mlink->mbox_from);
-#endif
     return mlink->cmd_ctx.reply_sz_read;
 }
 
@@ -131,14 +127,10 @@ static int mbox_link_request(struct link *link,
     // TODO: timeout on ACKs as part of rtimeout_ms
     // INFO("mbox_link_request: %s: waiting for ACK...\r\n", link->name);
 
-#if ATF_FIQ
-    while (!mlink->cmd_ctx.tx_acked);
-#else
     /* Until TRCH server becomes stable, we just avoid infinite wait */
    if (!mbox_get_ack_poll(mlink->mbox_to))
         WARN("%s: Didn't get ACK, but ignores for now\r\n", __func__);
     mbox_clear_ack(mlink->mbox_to);
-#endif
     // INFO("mbox_link_request: %s: ACK received\r\n", link->name);
 
     rc = rsz;

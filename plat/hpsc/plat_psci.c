@@ -37,41 +37,13 @@ static int hpsc_pwr_domain_on(u_register_t mpidr)
 	if (cpu_id == -1)
 		return PSCI_E_INTERN_FAIL;
 
-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
-	int kk;
-	aff_info_state_t kk2[8];
-	for (kk = 0; kk < 8; kk++) {
-		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
-	}
-	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
-		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
-#endif
 	proc = pm_get_proc(cpu_id);
 	/* Clear power down request */
-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
-	for (kk = 0; kk < 8; kk++) {
-		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
-	}
-	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
-		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
-#endif
-	pm_client_wakeup(proc);
-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
-	for (kk = 0; kk < 8; kk++) {
-		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
-	}
-	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
-		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
-#endif
 
-	/* Send request to PMU to wake up selected APU CPU core */
+	/* Send request to TRCH to wake up selected APU CPU core */
 	pm_req_wakeup(proc->node_id, 1, hpsc_sec_entry, REQ_ACK_BLOCKING);
-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
-	for (kk = 0; kk < 8; kk++) {
-		kk2[kk] = get_cpu_data_by_index(kk,psci_svc_cpu_data.aff_info_state); 
-	}
-	VERBOSE("%s: power state = (%d, %d, %d, %d, %d, %d, %d, %d)\n",
-		__func__, kk2[0], kk2[1], kk2[2], kk2[3], kk2[4], kk2[5], kk2[6], kk2[7]); 
+#if CONFIG_STAND_ALONE_POWER_MANAGEMENT
+	pm_client_wakeup(proc);
 #endif
 
 	return PSCI_E_SUCCESS;

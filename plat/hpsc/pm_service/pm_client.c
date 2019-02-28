@@ -298,9 +298,6 @@ void pm_client_suspend(const struct pm_proc *proc, unsigned int state)
 	if (state == PM_STATE_SUSPEND_TO_RAM)
 		pm_client_set_wakeup_sources();
 
-	/* Set powerdown request */
-	mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | proc->pwrdn_mask);
-
 	bakery_lock_release(&pm_client_secure_lock);
 }
 
@@ -316,11 +313,6 @@ void pm_client_abort_suspend(void)
 	/* Enable interrupts at processor level (for current cpu) */
 	gicv3_cpuif_enable(plat_my_core_pos());
 	bakery_lock_get(&pm_client_secure_lock);
-
-	VERBOSE("%s: mmio_write_32(APU_PWRCTL, mmio_read_32(APU_PWRCTL) | 0x%x \n", __func__, ~primary_proc->pwrdn_mask);
-	/* Clear powerdown request */
-	mmio_write_32(APU_PWRCTL,
-		 mmio_read_32(APU_PWRCTL) & ~primary_proc->pwrdn_mask);
 
 	bakery_lock_release(&pm_client_secure_lock);
 }

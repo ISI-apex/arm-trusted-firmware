@@ -109,8 +109,6 @@ int psci_do_cpu_off(unsigned int end_pwrlvl)
 	 * Plat. management: Perform platform specific actions to turn this
 	 * cpu off e.g. exit cpu coherency, program the power controller etc.
 	 */
-	psci_plat_pm_ops->pwr_domain_off(&state_info);
-
 #if ENABLE_PSCI_STAT
 	plat_psci_stat_accounting_start(&state_info);
 #endif
@@ -157,6 +155,8 @@ exit:
 			/* This function must not return */
 			psci_plat_pm_ops->pwr_domain_pwr_down_wfi(&state_info);
 		} else {
+			/* this routine may not return, so we put this routine at the end */
+			psci_plat_pm_ops->pwr_domain_off(&state_info);
 			/*
 			 * Enter a wfi loop which will allow the power
 			 * controller to physically power down this cpu.

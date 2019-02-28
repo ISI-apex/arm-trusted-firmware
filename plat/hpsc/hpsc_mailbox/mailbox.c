@@ -69,47 +69,9 @@ struct mbox {
 static struct mbox mboxes[MAX_MBOXES] = {0};
 static struct mbox_ip_block blocks[MAX_BLOCKS] = {0};
 
-#if ATF_FIQ
-static unsigned irq_to_intid(unsigned irq, gic_irq_type_t type)
-{
-    switch (type) {
-        case GIC_IRQ_TYPE_SPI:
-                return GIC_INTERNAL + irq;
-        case GIC_IRQ_TYPE_PPI:
-                return GIC_NR_SGIS + irq;
-        case GIC_IRQ_TYPE_SGI:
-                return irq;
-        default:
-		INFO("No such IRQ\n");
-                assert(0);
-		return 0;
-    }
-}
-#endif
-
 static void mbox_irq_subscribe(struct mbox *mbox)
 {
-#if ATF_FIQ
-    /* original code */
-    if (mbox->block->irq_refcnt[mbox->int_idx]++ == 0)
-        intc_int_enable(mbox->irq);
-
-    /* new code: tried but did not work yet */
-    INFO("%s: plat_my_core_pos() = %d, int_idx = %d \n", __func__, plat_my_core_pos(), mbox->int_idx+HPPS_IRQ__HT_MBOX_0);
-    int irq_id = irq_to_intid(mbox->int_idx+HPPS_IRQ__HT_MBOX_0, GIC_IRQ_TYPE_SPI);
-    int ret = request_intr_type_el3(irq_id, (interrupt_type_handler_t) mbox_ack_isr);
-    gicv3_set_interrupt_type(irq_id, plat_my_core_pos(), INTR_GROUP0);
-    int group = gicv3_get_interrupt_type(irq_id, plat_my_core_pos());
-    INFO("%s: group = %d\n", __func__, group);
-    plat_ic_set_spi_routing(irq_id, INTR_ROUTING_MODE_PE, plat_my_core_pos());
-
-    gicv3_enable_interrupt(irq_id, plat_my_core_pos());
-    if (ret) {
-            WARN("BL31: registering interrupt(%d): relative int_idx(%d) failed\n", irq_id, mbox->int_idx+HPPS_IRQ__HT_MBOX_0);
-    } else {
-            WARN("BL31: registering interrupt(%d): relative int_idx(%d) succeeded\n", irq_id, mbox->int_idx+HPPS_IRQ__HT_MBOX_0);
-    }
-#endif
+    return;
 }
 static void mbox_irq_unsubscribe(struct mbox *mbox)
 {

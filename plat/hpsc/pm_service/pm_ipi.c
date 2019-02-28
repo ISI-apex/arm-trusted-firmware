@@ -93,8 +93,6 @@ int pm_ipi_init(const struct pm_proc *proc)
    	   VERBOSE("%s: successfully initialized TRCH_MBOX_ATF_LINK \n", __func__);
 #endif
 
-	ipi_mb_open(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id);
-
 	return 0;
 }
 
@@ -120,18 +118,6 @@ static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
 					     uint32_t is_blocking)
 #endif
 {
-	unsigned int offset = 0;
-	uintptr_t buffer_base = proc->ipi->buffer_base +
-					IPI_BUFFER_TARGET_PMU_OFFSET +
-					IPI_BUFFER_REQ_OFFSET;
-	/* Write payload into IPI buffer */
-	for (size_t i = 0; i < PAYLOAD_ARG_CNT; i++) {
-		mmio_write_32(buffer_base + offset, payload[i]);
-		offset += PAYLOAD_ARG_SIZE;
-	}
-	/* Generate IPI to PMU */
-	ipi_mb_notify(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id,
-		      is_blocking);
 
 #if TRCH_SERVER
 	/* send PSCI command request to TRCH */
@@ -148,10 +134,6 @@ static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
 		mbox_payload[i+2] = payload[i];
 	}
 
-#if ATF_FIQ	
-	gicv3_cpuif_enable(plat_my_core_pos());
-        gicv3_rdistif_init(plat_my_core_pos());
-#endif
 	/* send payload and get ack */
 	int rc = trch_atf_link->request(trch_atf_link, 
 				CMD_TIMEOUT_MS_SEND, mbox_payload, (PAYLOAD_ARG_CNT + 1) * sizeof(uint32_t)/* sizeof(PAYLOAD_ARG_CNT+1) */,

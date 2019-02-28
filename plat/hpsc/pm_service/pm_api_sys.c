@@ -98,6 +98,13 @@ enum pm_ret_status pm_self_suspend(enum pm_node_id nid,
 	/* Send request to the PMU */
 	PM_PACK_PAYLOAD6(payload, PM_SELF_SUSPEND, proc->node_id, latency,
 			 state, address, (address >> 32));
+	/* 
+	 * Note that actual controling of Xilinx APU_PWRCTL device is not done.
+	 * If power is off here, the cpu will stop here and it cannot return
+	 * SMC call in pm_smc_handler().
+	 * We will remove Xilinx controller anyway, so it is OK.
+	 *
+	 */
 	return pm_ipi_send_sync(proc, payload, NULL, 0);
 }
 
