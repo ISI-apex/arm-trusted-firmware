@@ -167,7 +167,7 @@
 #define HPSC_UART_CLOCK         100000000
 
 /* Must be non zero */
-#define HPSC_UART_BAUDRATE	500000
+#define HPSC_UART_BAUDRATE	125000
 #define ARM_CONSOLE_BAUDRATE	HPSC_UART_BAUDRATE
 
 /* Silicon version detection */
