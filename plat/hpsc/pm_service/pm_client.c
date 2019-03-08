@@ -326,12 +326,10 @@ void pm_client_abort_suspend(void)
 void pm_client_wakeup(const struct pm_proc *proc)
 {
 	unsigned int cpuid = pm_get_cpuid(proc->node_id);	/* 0 .. 7 */
-
 	if (cpuid == UNDEFINED_CPUID)
 		return;
 
 	bakery_lock_get(&pm_client_secure_lock);
-
 	if (cpuid >= 4) {
 		/* clear powerdown bit for affected cpu */
 		uint32_t val = mmio_read_32(APU1_PWRCTL);
@@ -347,16 +345,6 @@ void pm_client_wakeup(const struct pm_proc *proc)
 		VERBOSE("%s: cpuid(%u):  val = 0x%x, proc->pwrdn_mask = 0x%x \n", __func__, cpuid, val, proc->pwrdn_mask);
 		VERBOSE("%s: cpuid(%u):  mmio_write_32(APU_PWRCTL, 0x%x) \n", __func__, cpuid, val);
 	}
-
-        /* power up island */
-        mmio_write_32(PMU_GLOBAL_REQ_PWRUP_EN, 1 << cpuid);    // DK: looks OK
-        // 0xFFD80118 <- 0x{1, 2, 4, 8, 10, 20, 40, 80}
-        mmio_write_32(PMU_GLOBAL_REQ_PWRUP_TRIG, 1 << cpuid);
-        // 0xFFD80120 <- 0x{1, 2, 4, 8, 10, 20, 40, 80} // DK: looks OK
-        /* FIXME: we should have a way to break out */
-        while (mmio_read_32(PMU_GLOBAL_REQ_PWRUP_STATUS) & (1 << cpuid))
-            ;
-
 #if TRCH_SERVER__
 	/* TODO */
 	trch_atf_mbox_write(HPPS_CPU_REQ_PWRUP_EN, cpuid);	/* power up */
@@ -385,7 +373,6 @@ void pm_client_wakeup(const struct pm_proc *proc)
 	/* TODO */
 	trch_atf_mbox_write(HPPS_CPU_RESET_RELEASE, cpuid);/* release reset */
 #endif
-
 	bakery_lock_release(&pm_client_secure_lock);
 }
 

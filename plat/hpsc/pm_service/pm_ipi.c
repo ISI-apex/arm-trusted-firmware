@@ -51,8 +51,8 @@ const struct pm_ipi apu_ipi = {
 };
 
 #if TRCH_SERVER
-#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 28 */
-#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 29 */
+#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 4 */
+#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 5 */
 
 struct link *trch_atf_link;
 #endif

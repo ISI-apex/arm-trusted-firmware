@@ -155,7 +155,6 @@ enum pm_ret_status pm_req_wakeup(enum pm_node_id target,
 {
 	uint32_t payload[PAYLOAD_ARG_CNT];
 	uint64_t encoded_address;
-
 	/* encode set Address into 1st bit of address */
 	encoded_address = address;
 	encoded_address |= !!set_address;

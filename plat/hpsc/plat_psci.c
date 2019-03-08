@@ -108,14 +108,20 @@ static void hpsc_pwr_domain_on_finish(const psci_power_state_t *target_state)
 static void hpsc_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 {
 	unsigned int cpu_id = plat_my_core_pos();
-	const struct pm_proc *proc = pm_get_proc(cpu_id);
 
 	for (size_t i = 0; i <= PLAT_MAX_PWR_LVL; i++)
 		VERBOSE("%s: cpu(%d): target_state->pwr_domain_state[%lu]=%x\n",
 			__func__, cpu_id, i, target_state->pwr_domain_state[i]);
 
 	/* Clear the APU power control register for this cpu */
+#if CONFIG_STAND_ALONE_POWER_MANAGEMENT
+	const struct pm_proc *proc = pm_get_proc(cpu_id);
+
+	/* pm_client_wakeup() is a local call.
+	   when/how to tell TRCH to do pw management? */
+	/* bigger issue is that how a core wakeup itself? */
 	pm_client_wakeup(proc);
+#endif
 
 #if PLAT_HAS_INTERCONNECT
 	/* enable coherency */
