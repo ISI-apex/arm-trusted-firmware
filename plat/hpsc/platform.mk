@@ -11,8 +11,9 @@ A53_DISABLE_NON_TEMPORAL_HINT := 0
 SEPARATE_CODE_AND_RODATA := 1
 HPSC_WARM_RESTART := 0
 TRCH_SERVER := 1
-ATF_FIQ := 0
 CONFIG_AARCH64 := 1
+CONFIG_STAND_ALONE_POWER_MANAGEMENT := 0
+
 override RESET_TO_BL31 := 1
 
 # Do not enable SVE
@@ -54,8 +55,8 @@ ifdef TRCH_SERVER
   $(eval $(call add_define,TRCH_SERVER))
 endif
 
-ifdef ATF_FIQ
-  $(eval $(call add_define,ATF_FIQ))
+ifdef CONFIG_STAND_ALONE_POWER_MANAGEMENT
+  $(eval $(call add_define,CONFIG_STAND_ALONE_POWER_MANAGEMENT))
 endif
 
 PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/			\

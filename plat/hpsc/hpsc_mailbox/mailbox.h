@@ -34,8 +34,10 @@ struct mbox *mbox_claim(volatile uint32_t * ip_base, unsigned instance,
 int mbox_release(struct mbox *m);
 size_t mbox_send(struct mbox *m, void *buf, size_t sz);
 size_t mbox_read(struct mbox *m, void *buf, size_t sz);
-bool mbox_get_ack(struct mbox * mbox);
+bool mbox_get_ack_poll(struct mbox * mbox);
+bool mbox_get_rcv_poll(struct mbox * mbox);
 void mbox_clear_ack(struct mbox * mbox);
+void mbox_clear_rcv(struct mbox * mbox);
 
 void mbox_rcv_isr(unsigned int_idx);
 void mbox_ack_isr(unsigned int_idx);

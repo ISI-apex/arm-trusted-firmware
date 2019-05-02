@@ -64,6 +64,11 @@ unsigned int pm_get_shutdown_scope()
 	PM_PACK_PAYLOAD5(pl, arg0, arg1, arg2, arg3, arg4);		\
 }
 
+#define PM_PACK_PAYLOAD7(pl, arg0, arg1, arg2, arg3, arg4, arg5, arg6) {\
+	pl[6] = (uint32_t)(arg6);					\
+	PM_PACK_PAYLOAD5(pl, arg0, arg1, arg2, arg3, arg4, arg5);	\
+}
+
 /**
  * pm_self_suspend() - PM call for processor to suspend itself
  * @nid		Node id of the processor or subsystem
@@ -93,6 +98,13 @@ enum pm_ret_status pm_self_suspend(enum pm_node_id nid,
 	/* Send request to the PMU */
 	PM_PACK_PAYLOAD6(payload, PM_SELF_SUSPEND, proc->node_id, latency,
 			 state, address, (address >> 32));
+	/* 
+	 * Note that actual controling of Xilinx APU_PWRCTL device is not done.
+	 * If power is off here, the cpu will stop here and it cannot return
+	 * SMC call in pm_smc_handler().
+	 * We will remove Xilinx controller anyway, so it is OK.
+	 *
+	 */
 	return pm_ipi_send_sync(proc, payload, NULL, 0);
 }
 
@@ -143,8 +155,6 @@ enum pm_ret_status pm_req_wakeup(enum pm_node_id target,
 {
 	uint32_t payload[PAYLOAD_ARG_CNT];
 	uint64_t encoded_address;
-
-
 	/* encode set Address into 1st bit of address */
 	encoded_address = address;
 	encoded_address |= !!set_address;

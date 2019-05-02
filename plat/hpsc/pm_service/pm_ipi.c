@@ -11,6 +11,7 @@
 #include <arch_helpers.h>
 #include "../hpsc_ipi.h"
 #include "../hpsc_private.h"
+#include "pm_common.h"
 #include "pm_ipi.h"
 
 #if TRCH_SERVER
@@ -50,8 +51,8 @@ const struct pm_ipi apu_ipi = {
 };
 
 #if TRCH_SERVER
-#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 28 */
-#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 29 */
+#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 4 */
+#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 5 */
 
 struct link *trch_atf_link;
 #endif
@@ -92,8 +93,6 @@ int pm_ipi_init(const struct pm_proc *proc)
    	   VERBOSE("%s: successfully initialized TRCH_MBOX_ATF_LINK \n", __func__);
 #endif
 
-	ipi_mb_open(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id);
-
 	return 0;
 }
 
@@ -107,42 +106,38 @@ int pm_ipi_init(const struct pm_proc *proc)
  *
  * @return	Returns status, either success or error+reason
  */
+#if TRCH_SERVER
+static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
+					     uint32_t payload[PAYLOAD_ARG_CNT],
+					     uint32_t is_blocking,
+				    	     unsigned int *value, 
+					     size_t count)
+#else
 static enum pm_ret_status pm_ipi_send_common(const struct pm_proc *proc,
 					     uint32_t payload[PAYLOAD_ARG_CNT],
 					     uint32_t is_blocking)
+#endif
 {
-	unsigned int offset = 0;
-	uintptr_t buffer_base = proc->ipi->buffer_base +
-					IPI_BUFFER_TARGET_PMU_OFFSET +
-					IPI_BUFFER_REQ_OFFSET;
-	/* Write payload into IPI buffer */
-	for (size_t i = 0; i < PAYLOAD_ARG_CNT; i++) {
-		mmio_write_32(buffer_base + offset, payload[i]);
-		offset += PAYLOAD_ARG_SIZE;
-	}
-	/* Generate IPI to PMU */
-	ipi_mb_notify(proc->ipi->apu_ipi_id, proc->ipi->pmu_ipi_id,
-		      is_blocking);
 
 #if TRCH_SERVER
 	/* send PSCI command request to TRCH */
 	/* initial test code */
 	uint32_t mbox_payload[32];
-	uint32_t reply[32] = {0};
 
 	// INFO("pm_ipi_send_common: send mail to TRCH\n");
-	mbox_payload[0] = 3;	/* CMD_PSCI */
-	for (size_t i = 1; i < PAYLOAD_ARG_CNT + 1 ; i++) {
-		mbox_payload[i] = payload[i-1];
+	/* The first two words are added
+         * 0: CMD_PSCI
+         * 1: node_id of the caller */
+	mbox_payload[0] = CMD_PSCI;	/* CMD_PSCI */
+	mbox_payload[1] = proc->node_id;/* caller ID */
+	for (size_t i = 0; i < PAYLOAD_ARG_CNT ; i++) {
+		mbox_payload[i+2] = payload[i];
 	}
 
-#if ATF_FIQ	
-	gicv3_cpuif_enable(plat_my_core_pos());
-        gicv3_rdistif_init(plat_my_core_pos());
-#endif
+	/* send payload and get ack */
 	int rc = trch_atf_link->request(trch_atf_link, 
 				CMD_TIMEOUT_MS_SEND, mbox_payload, (PAYLOAD_ARG_CNT + 1) * sizeof(uint32_t)/* sizeof(PAYLOAD_ARG_CNT+1) */,
-				CMD_TIMEOUT_MS_RECV, reply, 0);
+				CMD_TIMEOUT_MS_RECV, value, count * sizeof(uint32_t));
 	if (rc < 0) 
 		return rc;
 #endif
@@ -165,9 +160,11 @@ enum pm_ret_status pm_ipi_send_non_blocking(const struct pm_proc *proc,
 	enum pm_ret_status ret;
 
 	bakery_lock_get(&pm_secure_lock);
-
+#if TRCH_SERVER
+	ret = pm_ipi_send_common(proc, payload, IPI_NON_BLOCKING, NULL, 0);
+#else
 	ret = pm_ipi_send_common(proc, payload, IPI_NON_BLOCKING);
-
+#endif
 	bakery_lock_release(&pm_secure_lock);
 
 	return ret;
@@ -190,14 +187,18 @@ enum pm_ret_status pm_ipi_send(const struct pm_proc *proc,
 	VERBOSE("pm_ipi_send : start \n");
 	bakery_lock_get(&pm_secure_lock);
 
+#if TRCH_SERVER
+	ret = pm_ipi_send_common(proc, payload, IPI_BLOCKING, NULL, 0);
+#else
 	ret = pm_ipi_send_common(proc, payload, IPI_BLOCKING);
-
+#endif
 	bakery_lock_release(&pm_secure_lock);
 
 	return ret;
 }
 
 
+#if TRCH_SERVER == 0
 /**
  * pm_ipi_buff_read() - Reads IPI response after PMU has handled interrupt
  * @proc	Pointer to the processor who is waiting and reading response
@@ -209,6 +210,8 @@ enum pm_ret_status pm_ipi_send(const struct pm_proc *proc,
 static enum pm_ret_status pm_ipi_buff_read(const struct pm_proc *proc,
 					   unsigned int *value, size_t count)
 {
+	/* receive ACK packet from TRCH */
+
 	size_t i;
 	uintptr_t buffer_base = proc->ipi->buffer_base +
 				IPI_BUFFER_TARGET_PMU_OFFSET +
@@ -231,6 +234,7 @@ static enum pm_ret_status pm_ipi_buff_read(const struct pm_proc *proc,
 
 	return mmio_read_32(buffer_base);
 }
+#endif
 
 /**
  * pm_ipi_buff_read_callb() - Reads IPI response after PMU has handled interrupt
@@ -276,6 +280,11 @@ enum pm_ret_status pm_ipi_send_sync(const struct pm_proc *proc,
 
 	bakery_lock_get(&pm_secure_lock);
 
+#if TRCH_SERVER
+	ret = pm_ipi_send_common(proc, payload, IPI_BLOCKING, value, count);
+	if (ret != PM_RET_SUCCESS)
+		goto unlock;
+#else
 	ret = pm_ipi_send_common(proc, payload, IPI_BLOCKING);
 	VERBOSE("pm_ipi_send_sync: after pm_ipi_send_common: return(%d)\n", ret);
 	if (ret != PM_RET_SUCCESS)
@@ -284,6 +293,7 @@ enum pm_ret_status pm_ipi_send_sync(const struct pm_proc *proc,
 	ret = pm_ipi_buff_read(proc, value, count);
 
 	VERBOSE("pm_ipi_send_sync: after pm_ipi_buff_read: return(%d)\n", ret);
+#endif
 
 unlock:
 	bakery_lock_release(&pm_secure_lock);
