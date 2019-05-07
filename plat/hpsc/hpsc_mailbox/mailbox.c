@@ -69,47 +69,9 @@ struct mbox {
 static struct mbox mboxes[MAX_MBOXES] = {0};
 static struct mbox_ip_block blocks[MAX_BLOCKS] = {0};
 
-#if ATF_FIQ
-static unsigned irq_to_intid(unsigned irq, gic_irq_type_t type)
-{
-    switch (type) {
-        case GIC_IRQ_TYPE_SPI:
-                return GIC_INTERNAL + irq;
-        case GIC_IRQ_TYPE_PPI:
-                return GIC_NR_SGIS + irq;
-        case GIC_IRQ_TYPE_SGI:
-                return irq;
-        default:
-		INFO("No such IRQ\n");
-                assert(0);
-		return 0;
-    }
-}
-#endif
-
 static void mbox_irq_subscribe(struct mbox *mbox)
 {
-#if ATF_FIQ
-    /* original code */
-    if (mbox->block->irq_refcnt[mbox->int_idx]++ == 0)
-        intc_int_enable(mbox->irq);
-
-    /* new code: tried but did not work yet */
-    INFO("%s: plat_my_core_pos() = %d, int_idx = %d \n", __func__, plat_my_core_pos(), mbox->int_idx+HPPS_IRQ__HT_MBOX_0);
-    int irq_id = irq_to_intid(mbox->int_idx+HPPS_IRQ__HT_MBOX_0, GIC_IRQ_TYPE_SPI);
-    int ret = request_intr_type_el3(irq_id, (interrupt_type_handler_t) mbox_ack_isr);
-    gicv3_set_interrupt_type(irq_id, plat_my_core_pos(), INTR_GROUP0);
-    int group = gicv3_get_interrupt_type(irq_id, plat_my_core_pos());
-    INFO("%s: group = %d\n", __func__, group);
-    plat_ic_set_spi_routing(irq_id, INTR_ROUTING_MODE_PE, plat_my_core_pos());
-
-    gicv3_enable_interrupt(irq_id, plat_my_core_pos());
-    if (ret) {
-            WARN("BL31: registering interrupt(%d): relative int_idx(%d) failed\n", irq_id, mbox->int_idx+HPPS_IRQ__HT_MBOX_0);
-    } else {
-            WARN("BL31: registering interrupt(%d): relative int_idx(%d) succeeded\n", irq_id, mbox->int_idx+HPPS_IRQ__HT_MBOX_0);
-    }
-#endif
+    return;
 }
 static void mbox_irq_unsubscribe(struct mbox *mbox)
 {
@@ -257,20 +219,16 @@ size_t mbox_send(struct mbox *m, void *buf, size_t sz)
     if (sz % sizeof(uint32_t))
         len++;
 
-//    INFO("mbox_send: msg: ");
     volatile uint32_t *slot = (volatile uint32_t *)((uint8_t *)m->base + REG_DATA);
     for (i = 0; i < len; ++i) {
         slot[i] = msg[i];
-//        INFO("%x ", msg[i]);
     }
-//    INFO("\r\n");
     // zero out any remaining registers
     for (; i < HPSC_MBOX_DATA_REGS; i++)
         slot[i] = 0;
 
     volatile uint32_t *addr = (volatile uint32_t *)((uint8_t *)m->base + REG_EVENT_SET);
     uint32_t val = HPSC_MBOX_EVENT_A;
-//    INFO("mbox_send: raise int A: %p <- %08x\r\n", addr, val);
     *addr = val;
 
     return sz;
@@ -319,10 +277,54 @@ static void mbox_instance_rcv_isr(struct mbox *mbox)
         mbox->cb.rcv_cb(mbox->cb_arg);
 }
 
-bool mbox_get_ack(struct mbox * mbox)
+/* Todo: replace with sleep */
+static int busy_wait()
+{
+    int i, j;
+    for(i = j = 0; i < 1000; i++) {
+       j += i * (i - 2);
+    }
+    return j;
+}
+
+bool mbox_get_rcv_poll(struct mbox * mbox)
 {
     uint32_t * addr = (uint32_t *)((uint8_t *)mbox->base + REG_EVENT_STATUS);
-    uint32_t val = (* addr) & HPSC_MBOX_EVENT_B;
+    uint32_t val;
+    int i;
+    for (i = 0; i < 1000000000; i++) {
+        if (i > 0 && i % 100 == 0) printf("\r");	/* to give Qemu a chance to do context changes */
+        val = (* addr) & HPSC_MBOX_EVENT_A;
+        if (val != 0) return true;
+        busy_wait();
+    }
+    val = (* addr) & HPSC_MBOX_EVENT_A;
+    if (!val) WARN("%s: timeout, event_status(0x%x), val(0x%x)\n", __func__, *addr, val);
+    return (val != 0);
+}
+
+void mbox_clear_rcv(struct mbox * mbox)
+{
+    volatile uint32_t *addr;
+    uint32_t val;
+    addr = (volatile uint32_t *)((uint8_t *)mbox->base + REG_EVENT_CLEAR);
+    val = HPSC_MBOX_EVENT_A;
+    *addr = val;
+}
+
+bool mbox_get_ack_poll(struct mbox * mbox)
+{
+    volatile uint32_t * addr;
+    uint32_t val;
+    int i;
+    addr = (volatile uint32_t *)((uint8_t *)mbox->base + REG_EVENT_STATUS);
+    for (i = 0; i < 1000000000; i++) {
+        if (i > 0 && i % 100 == 0) printf("\r");	/* to give Qemu a chance to do context changes */
+        val = (* addr) & HPSC_MBOX_EVENT_B;
+        if (val != 0) return true;
+        busy_wait();
+    }
+    val = (* addr) & HPSC_MBOX_EVENT_B;
     return (val != 0);
 }
 
@@ -333,7 +335,6 @@ void mbox_clear_ack(struct mbox * mbox)
     addr = (volatile uint32_t *)((uint8_t *)mbox->base + REG_EVENT_CLEAR);
     val = HPSC_MBOX_EVENT_B;
     *addr = val;
-
 }
 
 static void mbox_instance_ack_isr(struct mbox *mbox)

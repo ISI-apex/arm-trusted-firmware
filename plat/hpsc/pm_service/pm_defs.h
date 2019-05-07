@@ -37,6 +37,14 @@
  * Enum definitions
  ********************************************************************/
 
+#define TRCH_CMD_PSCI	3	/* CMD_PSCI from hpsc-baremetal/lib/command.h */
+enum pm_header {
+	PM_RTPS_R52_0 = 1,
+	PM_RTPS_R52_1,
+	PM_RTPS_A53,
+	PM_HPPS_PSCI
+};
+
 enum pm_api_id {
 	/* Miscellaneous API functions: */
 	PM_GET_API_VERSION = 1, /* Do not change or move */
@@ -106,6 +114,7 @@ enum pm_node_id {
 	NODE_RPU,
 	NODE_RPU_0,
 	NODE_RPU_1,
+	NODE_RPU_A53,
 	NODE_PLD,
 	NODE_FPD,
 	NODE_OCM_BANK_0,
