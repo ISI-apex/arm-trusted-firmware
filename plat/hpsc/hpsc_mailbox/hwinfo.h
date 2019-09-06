@@ -7,19 +7,19 @@
 
 // This file fulfills the role of a device tree
 
-#define HPPS_GIC_BASE   0xf9000000
-#define RTPS_GIC_BASE   0x30e00000
+#define HPPS_GIC_BASE   0xe2c00000
+#define RTPS_GIC_BASE   0x34600000
 #define TRCH_SCS_BASE   0xe000e000
 
-#define RTPS_TRCH_TO_HPPS_SMMU_BASE   ((volatile uint32_t *)0x31100000)
-#define RTPS_SMMU_BASE                ((volatile uint32_t *)0x31000000)
-#define HPPS_SMMU_BASE                ((volatile uint32_t *)0xf9300000)
+#define RTPS_TRCH_TO_HPPS_SMMU_BASE   ((volatile uint32_t *)0x31100000)	/* not defined in memory map v16 */
+#define RTPS_SMMU_BASE                ((volatile uint32_t *)0x34800000)
+#define HPPS_SMMU_BASE                ((volatile uint32_t *)0xe5000000)
 
 #define TRCH_DMA_BASE   ((volatile uint32_t *)0x21000000)
-#define RTPS_DMA_BASE   ((volatile uint32_t *)0x30a08000)
+#define RTPS_DMA_BASE   ((volatile uint32_t *)0x34208000)
 
-#define LSIO_UART0_BASE ((volatile uint32_t*)0x30000000)
-#define LSIO_UART1_BASE ((volatile uint32_t*)0x30001000)
+#define LSIO_UART0_BASE ((volatile uint32_t*)0x26004000)
+#define LSIO_UART1_BASE ((volatile uint32_t*)0x26005000)
 
 #define ETIMER__BASE                    ((volatile uint32_t *)0x2100a000)
 #define RTI_TIMER_TRCH__BASE            ((volatile uint32_t *)0x21009000)
@@ -32,9 +32,9 @@
 
 #define HPSC_MBOX_NUM_BLOCKS 3
 
-#define MBOX_LSIO__BASE           ((volatile uint32_t *)0x3000a000)
-#define MBOX_HPPS_TRCH__BASE      ((volatile uint32_t *)0xfff50000)
-#define MBOX_HPPS_RTPS__BASE      ((volatile uint32_t *)0xfff60000)
+#define MBOX_LSIO__BASE           ((volatile uint32_t *)0x26012000)
+#define MBOX_HPPS_TRCH__BASE      ((volatile uint32_t *)0xe0880000)
+#define MBOX_HPPS_RTPS__BASE      ((volatile uint32_t *)0xe0890000c)
 
 #define WDT_SIZE_4KB              0x1000
 #define WDT_SIZE_64KB            0x10000

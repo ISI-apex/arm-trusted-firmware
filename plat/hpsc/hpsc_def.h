@@ -25,10 +25,10 @@
  * HPSC memory map related constants
  ******************************************************************************/
 /* Aggregate of all devices in the first GB */
-#define DEVICE0_BASE		0xFF000000
-#define DEVICE0_SIZE		0x01000000	/* extended from 0x00E00000 for hpsc-mailbox */
-#define DEVICE1_BASE		0xF9000000
-#define DEVICE1_SIZE		0x00800000
+#define DEVICE0_BASE		0xE0100000
+#define DEVICE0_SIZE		0x0FE00000	/* extended from 0x00E00000 for hpsc-mailbox */
+#define DEVICE1_BASE		0xF0000000
+#define DEVICE1_SIZE		0x10000000
 
 /* For cpu reset APU space here too 0xFE5F1000 CRF_APB*/
 #define CRF_APB_BASE		0xFD1A0000
@@ -116,11 +116,11 @@
 /*******************************************************************************
  * GIC-400 & interrupt handling related constants
  ******************************************************************************/
-#define BASE_GICD_BASE		0xF9000000
-#define PLAT_ARM_GICR_BASE 	0xF9100000
+#define BASE_GICD_BASE		0xE2C00000
+#define PLAT_ARM_GICR_BASE 	0xE2D00000
 /* DK: Probably for gicv2 backward compatibility */
-#define BASE_GICC_BASE		0xF9020000
-#define VE_GICC_BASE		0xF9020000
+#define BASE_GICC_BASE		0xE2C20000
+#define VE_GICC_BASE		0xE2C20000
 
 #if HPSC_WARM_RESTART
 #define IRQ_SEC_IPI_APU				67
@@ -156,7 +156,7 @@
 /*******************************************************************************
  * UART related constants
  ******************************************************************************/
-#define HPSC_UART0_BASE		0xF92C0000
+#define HPSC_UART0_BASE		0xE0450000
 
 #if HPSC_CONSOLE_IS(16550)
 # define HPSC_UART_BASE	HPSC_UART0_BASE
