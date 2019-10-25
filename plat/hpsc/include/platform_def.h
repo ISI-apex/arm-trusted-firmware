@@ -70,15 +70,6 @@
 #endif
 
 /*******************************************************************************
- * TSP  specific defines.
- ******************************************************************************/
-#define TSP_SEC_MEM_BASE		BL32_BASE
-#define TSP_SEC_MEM_SIZE		(BL32_LIMIT - BL32_BASE + 1)
-
-/* ID of the secure physical generic timer interrupt used by the TSP */
-#define TSP_IRQ_SEC_PHY_TIMER		ARM_IRQ_SEC_PHY_TIMER
-
-/*******************************************************************************
  * Platform specific page table and MMU setup constants
  ******************************************************************************/
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)

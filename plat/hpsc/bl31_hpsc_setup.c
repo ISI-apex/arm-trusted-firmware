@@ -12,13 +12,21 @@
 #include <errno.h>
 #include <plat_arm.h>
 #include <platform.h>
+#include <generic_delay_timer.h>
 #include <uart_16550.h>
-#include "hpsc_private.h"
 
 #define BL31_END (unsigned long)(&__BL31_END__)
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
+static void hpsc_print_platform_name(void)
+{
+	unsigned int ver = 0;
+
+	NOTICE("ATF running on HPSC v%d at 0x%lx\n",
+	       ver, (unsigned long)(BL31_BASE));
+}
 
 /*
  * Return a pointer to the 'entry_point_info' structure of the next image for
@@ -67,8 +75,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	console_16550_register(HPSC_UART_BASE, HPSC_UART_CLOCK,
 			       HPSC_UART_BAUDRATE, &console);
 
-	/* Initialize the platform config for future decision making */
-	hpsc_config_setup();
+	hpsc_print_platform_name();
+	generic_delay_timer_init();
 
 	/* There are no parameters from BL2 if BL31 is a reset vector */
 	assert(from_bl2 == NULL);
@@ -87,17 +95,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-	if (hpsc_get_bootmode() == HPSC_BOOTMODE_JTAG) {
-		bl31_set_default_config();
-	} else {
-		/* use parameters from FSBL */
-		enum fsbl_handoff ret = fsbl_atf_handover(&bl32_image_ep_info,
-							  &bl33_image_ep_info);
-		if (ret == FSBL_HANDOFF_NO_STRUCT)
-			bl31_set_default_config();
-		else if (ret != FSBL_HANDOFF_SUCCESS)
-			panic();
-	}
+	bl31_set_default_config();
 
 	NOTICE("BL31: Secure code at 0x%lx\n", bl32_image_ep_info.pc);
 	NOTICE("BL31: Non secure code at 0x%lx\n", bl33_image_ep_info.pc);
