@@ -39,9 +39,6 @@
  ******************************************************************************/
 #define BASE_GICD_BASE		0x30c00000
 #define PLAT_ARM_GICR_BASE 	0x30c40000
-/* DK: Probably for gicv2 backward compatibility */
-#define BASE_GICC_BASE		0xF9020000
-#define VE_GICC_BASE		0xF9020000
 
 #define ARM_IRQ_SEC_PHY_TIMER		29
 
