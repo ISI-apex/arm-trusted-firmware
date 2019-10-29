@@ -56,9 +56,11 @@ endif
 
 PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/			\
 				-Iinclude/plat/arm/common/aarch64/		\
-				-Iplat/hpsc/include/				\
 				-Iplat/hpsc/					\
-				-Iplat/hpsc/hpsc_mailbox/		
+				-Iplat/hpsc/include/				\
+				-Iplat/hpsc/hpsc_mailbox/			\
+				-Iplat/hpsc_hpps/				\
+				-Iplat/hpsc_hpps/include			\
 
 PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				lib/xlat_tables/aarch64/xlat_tables.c		\
@@ -78,8 +80,7 @@ HPSC_CONSOLE	?=	16550
 ifeq (${HPSC_CONSOLE}, $(filter ${HPSC_CONSOLE},16550))
   PLAT_BL_COMMON_SOURCES += drivers/ti/uart/aarch64/16550_console.S
 else ifeq (${HPSC_CONSOLE}, dcc)
-  PLAT_BL_COMMON_SOURCES += \
-			    drivers/arm/dcc/dcc_console.c
+  PLAT_BL_COMMON_SOURCES += drivers/arm/dcc/dcc_console.c
 else
   $(error "Please define HPSC_CONSOLE")
 endif

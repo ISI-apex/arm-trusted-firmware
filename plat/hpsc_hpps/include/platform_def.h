@@ -10,7 +10,7 @@
 #include <arch.h>
 #include <gic_common.h>
 #include <interrupt_props.h>
-#include "../hpsc_def.h"
+#include "hpsc_def.h"
 
 /*******************************************************************************
  * Generic platform constants

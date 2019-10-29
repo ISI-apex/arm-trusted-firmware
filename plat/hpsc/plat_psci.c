@@ -16,7 +16,7 @@
 #include <platform.h>
 #include <psci.h>
 #include "pm_ipi.h"
-#include "../hpsc_def.h"
+#include "hpsc_def.h"
 #include "include/platform_def.h"
 
 #define IRQ_MAX		84

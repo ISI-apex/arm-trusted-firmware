@@ -56,9 +56,11 @@ endif
 
 PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/			\
 				-Iinclude/plat/arm/common/aarch64/		\
-				-Iplat/hpsc_rtps_a53/include/				\
-				-Iplat/hpsc_rtps_a53/					\
-				-Iplat/hpsc_rtps_a53/hpsc_mailbox/		
+				-Iplat/hpsc/					\
+				-Iplat/hpsc/include/				\
+				-Iplat/hpsc/hpsc_mailbox/			\
+				-Iplat/hpsc_rtps_a53/include/			\
+				-Iplat/hpsc_rtps_a53/				\
 
 PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				lib/xlat_tables/aarch64/xlat_tables.c		\
@@ -71,8 +73,8 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				plat/arm/common/arm_common.c			\
 				plat/arm/common/arm_gicv3.c			\
 				plat/common/plat_gicv3.c			\
-				plat/hpsc_rtps_a53/aarch64/hpsc_helpers.S		\
-				plat/hpsc_rtps_a53/aarch64/hpsc_common.c
+				plat/hpsc/aarch64/hpsc_helpers.S		\
+				plat/hpsc/aarch64/hpsc_common.c			\
 
 HPSC_CONSOLE	?=	16550
 ifeq (${HPSC_CONSOLE}, $(filter ${HPSC_CONSOLE},16550))
@@ -88,14 +90,14 @@ $(eval $(call add_define_val,HPSC_CONSOLE,HPSC_CONSOLE_ID_${HPSC_CONSOLE}))
 BL31_SOURCES		+=	lib/cpus/aarch64/aem_generic.S		\
 				lib/cpus/aarch64/cortex_a53.S		\
 				plat/common/plat_psci_common.c		\
-				plat/hpsc_rtps_a53/bl31_hpsc_setup.c		\
-				plat/hpsc_rtps_a53/plat_psci.c			\
-				plat/hpsc_rtps_a53/plat_hpsc.c			\
-				plat/hpsc_rtps_a53/pm_ipi.c			\
-				plat/hpsc_rtps_a53/hpsc_mailbox/command.c  \
-				plat/hpsc_rtps_a53/hpsc_mailbox/gic.c  \
-				plat/hpsc_rtps_a53/hpsc_mailbox/intc.c \
-				plat/hpsc_rtps_a53/hpsc_mailbox/mailbox.c  \
-				plat/hpsc_rtps_a53/hpsc_mailbox/mailbox-link.c \
-				plat/hpsc_rtps_a53/hpsc_mailbox/mem.c  \
-				plat/hpsc_rtps_a53/hpsc_mailbox/object.c \
+				plat/hpsc/bl31_hpsc_setup.c		\
+				plat/hpsc/plat_psci.c			\
+				plat/hpsc/plat_hpsc.c			\
+				plat/hpsc/pm_ipi.c			\
+				plat/hpsc/hpsc_mailbox/command.c  	\
+				plat/hpsc/hpsc_mailbox/gic.c  		\
+				plat/hpsc/hpsc_mailbox/intc.c 		\
+				plat/hpsc/hpsc_mailbox/mailbox.c  	\
+				plat/hpsc/hpsc_mailbox/mailbox-link.c 	\
+				plat/hpsc/hpsc_mailbox/mem.c  		\
+				plat/hpsc/hpsc_mailbox/object.c 	\
