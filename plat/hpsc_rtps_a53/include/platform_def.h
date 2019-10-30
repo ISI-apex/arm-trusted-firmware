@@ -40,8 +40,8 @@
  * little space for growth.
  */
 #ifndef HPSC_ATF_MEM_BASE
-# define BL31_BASE			0x70000000
-# define BL31_LIMIT			0x700fffff
+# define BL31_BASE			0x60000000
+# define BL31_LIMIT			0x6001ffff
 #else
 # define BL31_BASE			(HPSC_ATF_MEM_BASE)
 # define BL31_LIMIT			(HPSC_ATF_MEM_BASE + HPSC_ATF_MEM_SIZE - 1)
