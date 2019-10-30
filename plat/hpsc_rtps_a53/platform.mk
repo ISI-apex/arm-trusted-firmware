@@ -96,3 +96,4 @@ BL31_SOURCES		+=	lib/cpus/aarch64/aem_generic.S		\
 				plat/hpsc/hpsc_mailbox/mailbox-link.c 	\
 				plat/hpsc/hpsc_mailbox/mem.c  		\
 				plat/hpsc/hpsc_mailbox/object.c 	\
+				plat/hpsc_rtps_a53/topology.c 		\
