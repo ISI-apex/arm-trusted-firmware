@@ -33,13 +33,8 @@ ifdef HPSC_ATF_MEM_BASE
     endif
 endif
 
-ifdef HPSC_BL32_MEM_BASE
-    $(eval $(call add_define,HPSC_BL32_MEM_BASE))
-
-    ifndef HPSC_BL32_MEM_SIZE
-        $(error "HPSC_BL32_BASE defined without HPSC_BL32_SIZE")
-    endif
-    $(eval $(call add_define,HPSC_BL32_MEM_SIZE))
+ifdef HPSC_NEXT_IMAGE_BASE
+    $(eval $(call add_define,HPSC_NEXT_IMAGE_BASE))
 endif
 
 ifdef HPSC_WARM_RESTART

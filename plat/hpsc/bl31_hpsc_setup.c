@@ -17,8 +17,7 @@
 
 #define BL31_END (unsigned long)(&__BL31_END__)
 
-static entry_point_info_t bl32_image_ep_info;
-static entry_point_info_t bl33_image_ep_info;
+static entry_point_info_t next_image_ep_info;
 
 static void hpsc_print_platform_name(void)
 {
@@ -30,30 +29,16 @@ static void hpsc_print_platform_name(void)
 
 /*
  * Return a pointer to the 'entry_point_info' structure of the next image for
- * the security state specified. BL33 corresponds to the non-secure image type
- * while BL32 corresponds to the secure image type. A NULL pointer is returned
- * if the image does not exist.
+ * the security state specified. On the HPSC platform, we support the next
+ * image to be nonsecure only. A NULL pointer is returned if the image does not
+ * exist.
  */
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 {
 	assert(sec_state_is_valid(type));
-
 	if (type == NON_SECURE)
-		return &bl33_image_ep_info;
-
-	return &bl32_image_ep_info;
-}
-
-/*
- * Set the build time defaults. We want to do this when doing a JTAG boot
- * or if we can't find any other config data.
- */
-static inline void bl31_set_default_config(void) {
-	bl32_image_ep_info.pc = BL32_BASE;
-	bl32_image_ep_info.spsr = arm_get_spsr_for_bl32_entry();
-	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
-	bl33_image_ep_info.spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
-					  DISABLE_ALL_EXCEPTIONS);
+		return &next_image_ep_info;
+	return NULL;
 }
 
 /*
@@ -82,23 +67,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	assert(from_bl2 == NULL);
 	assert(plat_params_from_bl2 == NULL);
 
-	/*
-	 * Do initial security configuration to allow DRAM/device access. On
-	 * Base HPSC only DRAM security is programmable (via TrustZone), but
-	 * other platforms might have more programmable security devices
-	 * present.
-	 */
+	SET_PARAM_HEAD(&next_image_ep_info, PARAM_EP, VERSION_1, 0);
+	SET_SECURITY_STATE(next_image_ep_info.h.attr, NON_SECURE);
 
-	/* Populate common information for BL32 and BL33 */
-	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
-	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
-	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
-	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+	next_image_ep_info.pc = plat_get_ns_image_entrypoint();
+	next_image_ep_info.spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
+					  DISABLE_ALL_EXCEPTIONS);
 
-	bl31_set_default_config();
-
-	NOTICE("BL31: Secure code at 0x%lx\n", bl32_image_ep_info.pc);
-	NOTICE("BL31: Non secure code at 0x%lx\n", bl33_image_ep_info.pc);
+	NOTICE("BL31: next image entry point: 0x%lx\n", next_image_ep_info.pc);
 }
 
 /* Enable the test setup */

@@ -49,24 +49,11 @@
 # endif
 #endif
 
-/*******************************************************************************
- * BL32 specific defines.
- ******************************************************************************/
-#ifndef HPSC_BL32_MEM_BASE
-# define BL32_BASE			0xe0000000
-# define BL32_LIMIT			0xffffffff
+/* Next image to jump to after ATF */
+#ifndef HPSC_NEXT_IMAGE_BASE
+#define PLAT_ARM_NS_IMAGE_OFFSET	((BL31_LIMIT) + 1)
 #else
-# define BL32_BASE			(HPSC_BL32_MEM_BASE)
-# define BL32_LIMIT			(HPSC_BL32_MEM_BASE + HPSC_BL32_MEM_SIZE - 1)
-#endif
-
-/*******************************************************************************
- * BL33 specific defines.
- ******************************************************************************/
-#ifndef PRELOADED_BL33_BASE
-# define PLAT_ARM_NS_IMAGE_OFFSET	0x80020000
-#else
-# define PLAT_ARM_NS_IMAGE_OFFSET	PRELOADED_BL33_BASE
+#define PLAT_ARM_NS_IMAGE_OFFSET	(HPSC_NEXT_IMAGE_BASE)
 #endif
 
 /*******************************************************************************

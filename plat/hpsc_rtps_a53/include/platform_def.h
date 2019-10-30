@@ -49,34 +49,12 @@
 # endif
 #endif
 
-/*******************************************************************************
- * BL32 specific defines.
- ******************************************************************************/
-#ifndef HPSC_BL32_MEM_BASE
-# define BL32_BASE			0x71000000
-# define BL32_LIMIT			0x80000000
+/* Next image to jump to after ATF */
+#ifndef HPSC_NEXT_IMAGE_BASE
+#define PLAT_ARM_NS_IMAGE_OFFSET	((BL31_LIMIT) + 1)
 #else
-# define BL32_BASE			(HPSC_BL32_MEM_BASE)
-# define BL32_LIMIT			(HPSC_BL32_MEM_BASE + HPSC_BL32_MEM_SIZE - 1)
+#define PLAT_ARM_NS_IMAGE_OFFSET	(HPSC_NEXT_IMAGE_BASE)
 #endif
-
-/*******************************************************************************
- * BL33 specific defines.
- ******************************************************************************/
-#ifndef PRELOADED_BL33_BASE
-# define PLAT_ARM_NS_IMAGE_OFFSET	0x78000000
-#else
-# define PLAT_ARM_NS_IMAGE_OFFSET	PRELOADED_BL33_BASE
-#endif
-
-/*******************************************************************************
- * TSP  specific defines.
- ******************************************************************************/
-#define TSP_SEC_MEM_BASE		BL32_BASE
-#define TSP_SEC_MEM_SIZE		(BL32_LIMIT - BL32_BASE + 1)
-
-/* ID of the secure physical generic timer interrupt used by the TSP */
-#define TSP_IRQ_SEC_PHY_TIMER		ARM_IRQ_SEC_PHY_TIMER
 
 /*******************************************************************************
  * Platform specific page table and MMU setup constants
