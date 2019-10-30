@@ -22,7 +22,6 @@
 	mov_imm	x17, 0x0 /* BASE_GICC_BASE -- legacy */
 	mov_imm	x16, BASE_GICD_BASE
 	arm_print_gic_regs
-	print_cci_regs
 	.endm
 
 #endif /* __PLAT_MACROS_S__ */

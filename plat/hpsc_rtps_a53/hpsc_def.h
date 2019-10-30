@@ -26,17 +26,6 @@
 #define DEVICE1_BASE		0x31000000
 #define DEVICE1_SIZE		0x0f000000
 
-/*******************************************************************************
- * CCI-400 related constants
- ******************************************************************************/
-#define PLAT_ARM_CCI_BASE		0xFD6E0000
-#define PLAT_ARM_CCI_CLUSTER0_SL_IFACE_IX	3
-#define PLAT_ARM_CCI_CLUSTER1_SL_IFACE_IX	4
-
-
-/*******************************************************************************
- * GIC-400 & interrupt handling related constants
- ******************************************************************************/
 #define BASE_GICD_BASE		0x30c00000
 #define PLAT_ARM_GICR_BASE 	0x30c40000
 
