@@ -7,18 +7,19 @@ override ENABLE_PLAT_COMPAT := 0
 override PROGRAMMABLE_RESET_ADDRESS := 1
 override RESET_TO_BL31 := 1
 
+# The defaults for these are defined elsewhere, so ?= won't work here
+CONFIG_AARCH64 := 1
 MULTI_CONSOLE_API := 1
 PSCI_EXTENDED_STATE_ID := 1
 A53_DISABLE_NON_TEMPORAL_HINT := 0
 SEPARATE_CODE_AND_RODATA := 1
 HPSC_WARM_RESTART := 0
-TRCH_SERVER := 0
-CONFIG_AARCH64 := 1
-
 # Do not enable SVE
 ENABLE_SVE_FOR_NS	:= 0
-
 WORKAROUND_CVE_2017_5715	:=	0
+
+# Configurable via env vars or via makefiles included via make -f
+TRCH_SERVER ?= 0
 
 ifdef HPSC_ATF_MEM_BASE
     $(eval $(call add_define,HPSC_ATF_MEM_BASE))
