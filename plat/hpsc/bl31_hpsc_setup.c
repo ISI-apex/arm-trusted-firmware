@@ -56,6 +56,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	void *plat_params_from_bl2 = (void *)arg1;
 #endif
 
+#if WORKAROUND_SEV
+	/* On ZeBu emulator, execution speed is extremely slow until
+	 * the SEV instruction is executed. */
+	sev();
+#endif
+
 	/* Initialize the console to provide early debug support */
 	console_16550_register(HPSC_UART_BASE, HPSC_UART_CLOCK,
 			       HPSC_UART_BAUDRATE, &console);
