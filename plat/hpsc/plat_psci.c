@@ -437,14 +437,12 @@ static const struct plat_psci_ops hpsc_psci_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const struct plat_psci_ops **psci_ops)
 {
-#if DEBUG
 	int status = pm_ipi_init(primary_proc);
 	assert(!status);
-#endif /* DEBUG */
 
 	hpsc_sec_entry = sec_entrypoint;
 
 	*psci_ops = &hpsc_psci_ops;
 
-	return 0;
+	return status;
 }
