@@ -21,13 +21,23 @@
  * HPSC memory map related constants
  ******************************************************************************/
 /* Aggregate of all devices in the first GB */
-#define DEVICE0_BASE		0x30000000
+#define DEVICE0_BASE		0xFF000000
 #define DEVICE0_SIZE		0x01000000	/* extended from 0x00E00000 for hpsc-mailbox */
-#define DEVICE1_BASE		0x31000000
-#define DEVICE1_SIZE		0x0f000000
+#define DEVICE1_BASE		0xF9000000
+#define DEVICE1_SIZE		0x00800000
 
-#define BASE_GICD_BASE		0x30c00000
-#define PLAT_ARM_GICR_BASE 	0x30c40000
+/*******************************************************************************
+ * CCI-400 related constants
+ ******************************************************************************/
+#define PLAT_ARM_CCI_BASE		0xFD6E0000
+#define PLAT_ARM_CCI_CLUSTER0_SL_IFACE_IX	3
+#define PLAT_ARM_CCI_CLUSTER1_SL_IFACE_IX	4
+
+/*******************************************************************************
+ * GIC-400 & interrupt handling related constants
+ ******************************************************************************/
+#define BASE_GICD_BASE		0xF9000000
+#define PLAT_ARM_GICR_BASE 	0xF9100000
 
 #define ARM_IRQ_SEC_PHY_TIMER		29
 
@@ -54,7 +64,7 @@
 /*******************************************************************************
  * UART related constants
  ******************************************************************************/
-#define HPSC_UART0_BASE		0x30001000
+#define HPSC_UART0_BASE		0xF92C0000
 
 #if HPSC_CONSOLE_IS(16550)
 # define HPSC_UART_BASE	HPSC_UART0_BASE
@@ -62,15 +72,15 @@
 # error "invalid HPSC_CONSOLE"
 #endif
 
-#define HPSC_UART_CLOCK         100000000
+#define HPSC_UART_CLOCK         16000000
 
 /* Must be non zero */
 #define HPSC_UART_BAUDRATE	500000
 #define ARM_CONSOLE_BAUDRATE	HPSC_UART_BAUDRATE
 
 #if TRCH_SERVER
-#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 28 */
-#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 29 */
+#define HPPS_RCV_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_RCV_ATF_INT	/* 4 */
+#define HPPS_ACK_IRQ_IDX  MBOX_HPPS_TRCH__HPPS_ACK_ATF_INT	/* 5 */
 #endif /* TRCH_SERVER */
 
 #endif /* __HPSC_DEF_H__ */

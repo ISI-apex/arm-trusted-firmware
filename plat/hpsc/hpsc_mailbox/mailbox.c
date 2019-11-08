@@ -5,7 +5,6 @@
 #include <gicv3.h>
 #include <platform.h>
 
-#include "hpsc_private.h"
 // #include "INFO.h"
 #include "object.h"
 // #include "panic.h"

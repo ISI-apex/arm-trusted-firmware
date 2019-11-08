@@ -10,7 +10,7 @@
 #include <arch.h>
 #include <gic_common.h>
 #include <interrupt_props.h>
-#include "../hpsc_def.h"
+#include "hpsc_def.h"
 
 /*******************************************************************************
  * Generic platform constants
@@ -49,34 +49,12 @@
 # endif
 #endif
 
-/*******************************************************************************
- * BL32 specific defines.
- ******************************************************************************/
-#ifndef HPSC_BL32_MEM_BASE
-# define BL32_BASE			0xe0000000
-# define BL32_LIMIT			0xffffffff
+/* Next image to jump to after ATF */
+#ifndef HPSC_NEXT_IMAGE_BASE
+#define PLAT_ARM_NS_IMAGE_OFFSET	((BL31_LIMIT) + 1)
 #else
-# define BL32_BASE			(HPSC_BL32_MEM_BASE)
-# define BL32_LIMIT			(HPSC_BL32_MEM_BASE + HPSC_BL32_MEM_SIZE - 1)
+#define PLAT_ARM_NS_IMAGE_OFFSET	(HPSC_NEXT_IMAGE_BASE)
 #endif
-
-/*******************************************************************************
- * BL33 specific defines.
- ******************************************************************************/
-#ifndef PRELOADED_BL33_BASE
-# define PLAT_ARM_NS_IMAGE_OFFSET	0x80020000
-#else
-# define PLAT_ARM_NS_IMAGE_OFFSET	PRELOADED_BL33_BASE
-#endif
-
-/*******************************************************************************
- * TSP  specific defines.
- ******************************************************************************/
-#define TSP_SEC_MEM_BASE		BL32_BASE
-#define TSP_SEC_MEM_SIZE		(BL32_LIMIT - BL32_BASE + 1)
-
-/* ID of the secure physical generic timer interrupt used by the TSP */
-#define TSP_IRQ_SEC_PHY_TIMER		ARM_IRQ_SEC_PHY_TIMER
 
 /*******************************************************************************
  * Platform specific page table and MMU setup constants
@@ -90,7 +68,6 @@
 #define CACHE_WRITEBACK_GRANULE (1 << CACHE_WRITEBACK_SHIFT)
 
 #define PLAT_ARM_GICD_BASE	BASE_GICD_BASE
-#define PLAT_ARM_GICC_BASE	BASE_GICC_BASE
 
 /*
  * Define a list of Group 1 Secure and Group 0 interrupts as per GICv3
@@ -107,7 +84,5 @@
 
 #define PLAT_ARM_G0_IRQ_PROPS(grp)	{ARM_IRQ_SEC_SGI_0, 0x0, grp, 0x0}, \
 					{ARM_IRQ_SEC_SGI_0, 0x0, grp, 0x0}
-
-#define PLAT_HAS_INTERCONNECT 0 /* TODO: model CCN in Qemu */
 
 #endif /* __PLATFORM_DEF_H__ */

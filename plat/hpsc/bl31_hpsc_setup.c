@@ -12,40 +12,33 @@
 #include <errno.h>
 #include <plat_arm.h>
 #include <platform.h>
+#include <generic_delay_timer.h>
 #include <uart_16550.h>
-#include "hpsc_private.h"
 
 #define BL31_END (unsigned long)(&__BL31_END__)
 
-static entry_point_info_t bl32_image_ep_info;
-static entry_point_info_t bl33_image_ep_info;
+static entry_point_info_t next_image_ep_info;
+
+static void hpsc_print_platform_name(void)
+{
+	unsigned int ver = 0;
+
+	NOTICE("ATF running on HPSC v%d at 0x%lx\n",
+	       ver, (unsigned long)(BL31_BASE));
+}
 
 /*
  * Return a pointer to the 'entry_point_info' structure of the next image for
- * the security state specified. BL33 corresponds to the non-secure image type
- * while BL32 corresponds to the secure image type. A NULL pointer is returned
- * if the image does not exist.
+ * the security state specified. On the HPSC platform, we support the next
+ * image to be nonsecure only. A NULL pointer is returned if the image does not
+ * exist.
  */
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 {
 	assert(sec_state_is_valid(type));
-
 	if (type == NON_SECURE)
-		return &bl33_image_ep_info;
-
-	return &bl32_image_ep_info;
-}
-
-/*
- * Set the build time defaults. We want to do this when doing a JTAG boot
- * or if we can't find any other config data.
- */
-static inline void bl31_set_default_config(void) {
-	bl32_image_ep_info.pc = BL32_BASE;
-	bl32_image_ep_info.spsr = arm_get_spsr_for_bl32_entry();
-	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
-	bl33_image_ep_info.spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
-					  DISABLE_ALL_EXCEPTIONS);
+		return &next_image_ep_info;
+	return NULL;
 }
 
 /*
@@ -63,44 +56,31 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	void *plat_params_from_bl2 = (void *)arg1;
 #endif
 
+#if WORKAROUND_SEV
+	/* On ZeBu emulator, execution speed is extremely slow until
+	 * the SEV instruction is executed. */
+	sev();
+#endif
+
 	/* Initialize the console to provide early debug support */
 	console_16550_register(HPSC_UART_BASE, HPSC_UART_CLOCK,
 			       HPSC_UART_BAUDRATE, &console);
 
-	/* Initialize the platform config for future decision making */
-	hpsc_config_setup();
+	hpsc_print_platform_name();
+	generic_delay_timer_init();
 
 	/* There are no parameters from BL2 if BL31 is a reset vector */
 	assert(from_bl2 == NULL);
 	assert(plat_params_from_bl2 == NULL);
 
-	/*
-	 * Do initial security configuration to allow DRAM/device access. On
-	 * Base HPSC only DRAM security is programmable (via TrustZone), but
-	 * other platforms might have more programmable security devices
-	 * present.
-	 */
+	SET_PARAM_HEAD(&next_image_ep_info, PARAM_EP, VERSION_1, 0);
+	SET_SECURITY_STATE(next_image_ep_info.h.attr, NON_SECURE);
 
-	/* Populate common information for BL32 and BL33 */
-	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
-	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
-	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
-	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+	next_image_ep_info.pc = plat_get_ns_image_entrypoint();
+	next_image_ep_info.spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
+					  DISABLE_ALL_EXCEPTIONS);
 
-	if (hpsc_get_bootmode() == HPSC_BOOTMODE_JTAG) {
-		bl31_set_default_config();
-	} else {
-		/* use parameters from FSBL */
-		enum fsbl_handoff ret = fsbl_atf_handover(&bl32_image_ep_info,
-							  &bl33_image_ep_info);
-		if (ret == FSBL_HANDOFF_NO_STRUCT)
-			bl31_set_default_config();
-		else if (ret != FSBL_HANDOFF_SUCCESS)
-			panic();
-	}
-
-	NOTICE("BL31: Secure code at 0x%lx\n", bl32_image_ep_info.pc);
-	NOTICE("BL31: Non secure code at 0x%lx\n", bl33_image_ep_info.pc);
+	NOTICE("BL31: next image entry point: 0x%lx\n", next_image_ep_info.pc);
 }
 
 /* Enable the test setup */
@@ -185,11 +165,6 @@ void bl31_plat_runtime_setup(void)
  */
 void bl31_plat_arch_setup(void)
 {
-#if PLAT_HAS_INTERCONNECT
-	plat_arm_interconnect_init();
-	plat_arm_interconnect_enter_coherency();
-#endif // PLAT_HAS_INTERCONNECT
-
 	const mmap_region_t bl_regions[] = {
 	    MAP_REGION_FLAT(BL31_BASE, BL31_END - BL31_BASE,
 		    MT_MEMORY | MT_RW | MT_SECURE),
