@@ -21,6 +21,7 @@ WORKAROUND_CVE_2017_5715	:= 0
 TRCH_SERVER ?= 1
 HPSC_WARM_RESTART ?= 0
 WORKAROUND_SEV ?= 0
+WORKAROUND_SINGLE_ISSUE ?= 0
 
 ifdef HPSC_ATF_MEM_BASE
     $(eval $(call add_define,HPSC_ATF_MEM_BASE))
@@ -53,6 +54,9 @@ endif
 
 ifdef WORKAROUND_SEV
   $(eval $(call add_define,WORKAROUND_SEV))
+endif
+ifdef WORKAROUND_SINGLE_ISSUE
+  $(eval $(call add_define,WORKAROUND_SINGLE_ISSUE))
 endif
 
 PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/			\

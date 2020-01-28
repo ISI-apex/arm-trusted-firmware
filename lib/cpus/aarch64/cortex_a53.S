@@ -214,6 +214,12 @@ func cortex_a53_reset_func
 	bl	errata_a53_855873_wa
 #endif
 
+#if WORKAROUND_SINGLE_ISSUE
+	mrs	x1, CORTEX_A53_CPUACTLR_EL1
+	orr	x1, x1, #CORTEX_A53_CPUACTLR_EL1_DIDIS
+	msr	CORTEX_A53_CPUACTLR_EL1, x1
+#endif
+
 	/* ---------------------------------------------
 	 * Enable the SMP bit.
 	 * ---------------------------------------------
