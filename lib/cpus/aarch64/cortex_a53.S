@@ -193,7 +193,20 @@ endfunc check_errata_843419
 	 * Shall clobber: x0-x19
 	 * -------------------------------------------------
 	 */
+#if WAIT_FOR_DEBUGGER
+.section .data
+__debugger_attached_ptr: .long 0x0
+#endif /* WAIT_FOR_DEBUGGER */
+
 func cortex_a53_reset_func
+
+#if WAIT_FOR_DEBUGGER
+        ldr    x0, =__debugger_attached_ptr
+wait_for_debugger:
+        ldr     w1, [x0]
+        cbz     w1, wait_for_debugger
+#endif /* WAIT_FOR_DEBUGGER */
+
 	mov	x19, x30
 	bl	cpu_get_rev_var
 	mov	x18, x0

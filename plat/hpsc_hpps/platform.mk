@@ -22,6 +22,7 @@ TRCH_SERVER ?= 1
 HPSC_WARM_RESTART ?= 0
 WORKAROUND_SEV ?= 0
 WORKAROUND_SINGLE_ISSUE ?= 0
+WAIT_FOR_DEBUGGER ?= 0
 
 ifdef HPSC_ATF_MEM_BASE
     $(eval $(call add_define,HPSC_ATF_MEM_BASE))
@@ -57,6 +58,10 @@ ifdef WORKAROUND_SEV
 endif
 ifdef WORKAROUND_SINGLE_ISSUE
   $(eval $(call add_define,WORKAROUND_SINGLE_ISSUE))
+endif
+
+ifdef WAIT_FOR_DEBUGGER
+  $(eval $(call add_define,WAIT_FOR_DEBUGGER))
 endif
 
 PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/			\
