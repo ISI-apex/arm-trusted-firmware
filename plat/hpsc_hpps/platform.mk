@@ -20,7 +20,6 @@ WORKAROUND_CVE_2017_5715	:= 0
 # Configurable via env vars or via makefiles included via make -f
 TRCH_SERVER ?= 1
 HPSC_WARM_RESTART ?= 0
-WORKAROUND_SEV ?= 0
 WORKAROUND_SINGLE_ISSUE ?= 0
 WAIT_FOR_DEBUGGER ?= 0
 
@@ -53,9 +52,6 @@ ifdef TRCH_SERVER
   $(eval $(call add_define,TRCH_SERVER))
 endif
 
-ifdef WORKAROUND_SEV
-  $(eval $(call add_define,WORKAROUND_SEV))
-endif
 ifdef WORKAROUND_SINGLE_ISSUE
   $(eval $(call add_define,WORKAROUND_SINGLE_ISSUE))
 endif
