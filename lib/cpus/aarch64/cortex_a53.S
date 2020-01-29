@@ -231,6 +231,7 @@ wait_for_debugger:
 	mrs	x1, CORTEX_A53_CPUACTLR_EL1
 	orr	x1, x1, #CORTEX_A53_CPUACTLR_EL1_DIDIS
 	msr	CORTEX_A53_CPUACTLR_EL1, x1
+	nop /* without this delay, exception raised later */
 #endif
 
 	/* ---------------------------------------------
