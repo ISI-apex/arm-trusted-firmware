@@ -229,7 +229,8 @@ wait_for_debugger:
 
 #if WORKAROUND_SINGLE_ISSUE
 	mrs	x1, CORTEX_A53_CPUACTLR_EL1
-	orr	x1, x1, #CORTEX_A53_CPUACTLR_EL1_DIDIS
+	orr	x1, x1, #(CORTEX_A53_CPUACTLR_EL1_DIDIS | \
+			  CORTEX_A53_CPUACTLR_EL1_FPDIDIS)
 	msr	CORTEX_A53_CPUACTLR_EL1, x1
 	nop /* without this delay, exception raised later */
 #endif
