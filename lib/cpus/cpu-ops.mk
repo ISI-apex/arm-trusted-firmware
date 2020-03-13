@@ -60,7 +60,7 @@ ERRATA_A53_826319	?=0
 # Flag to apply erratum 835769 workaround at compile and link time.  This
 # erratum applies to revision <= r0p4 of the Cortex A53 cpu. Enabling this
 # workaround can lead the linker to create "*.stub" sections.
-ERRATA_A53_835769	?=0
+ERRATA_A53_835769	?=1
 
 # Flag to apply erratum 836870 workaround during reset. This erratum applies
 # only to revision <= r0p3 of the Cortex A53 cpu. From r0p4 and onwards, this
@@ -71,7 +71,7 @@ ERRATA_A53_836870	?=0
 # This erratum applies to revision <= r0p4 of the Cortex A53 cpu. Enabling this
 # workaround could lead the linker to emit "*.stub" sections which are 4kB
 # aligned.
-ERRATA_A53_843419	?=0
+ERRATA_A53_843419	?=1
 
 # Flag to apply errata 855873 during reset. This errata applies to all
 # revisions of the Cortex A53 CPU, but this firmware workaround only works
